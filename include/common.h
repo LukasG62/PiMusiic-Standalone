@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <semaphore.h>
 
 // TODO : 
 // - Support de ncurses (message d'erreur, debug, etc.) 
