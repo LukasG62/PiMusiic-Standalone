@@ -29,10 +29,10 @@ LD_FLAGS =-L$(LIB_DIR)
 
 all:$(PROG_PC) docs
 
-$(BIN_DIR)/%: $(OBJ_DIR)/%.o $(LIB_DIR)/libmusic.a $(LIB_DIR)/libinet.a
+$(BIN_DIR)/%: $(OBJ_DIR)/%.o $(LIB_DIR)/libmusic.a $(LIB_DIR)/libinet.a $(LIB_DIR)/libui.a
 	@mkdir -p $(BIN_DIR)
 	@echo "LD\t$@"
-	@gcc -o $@ $< -I$(INCLUDE_DIR) -lmusic -linet $(LD_FLAGS) $(LB_FLAG) 
+	@gcc -o $@ $< -I$(INCLUDE_DIR) -lui -lmusic -linet $(LD_FLAGS) $(LB_FLAG) 
 
 $(OBJ_DIR)/pimusiic.o: $(SRC_DIR)/pimusiic.c
 	@mkdir -p $(OBJ_DIR)
@@ -44,12 +44,17 @@ $(OBJ_DIR)/pi2iserv.o: $(SRC_DIR)/pi2iserv.c
 	@echo "CC\t$@"
 	@gcc -o $@ -c  $< -I$(INCLUDE_DIR)
 
-$(LIB_DIR)/libmusic.a: $(OBJ_DIR)/uiManager.o $(OBJ_DIR)/mpp.o $(OBJ_DIR)/note.o $(OBJ_DIR)/sound.o $(OBJ_DIR)/request.o
+$(LIB_DIR)/libmusic.a: $(OBJ_DIR)/mpp.o $(OBJ_DIR)/note.o $(OBJ_DIR)/sound.o $(OBJ_DIR)/request.o
 	@mkdir -p $(LIB_DIR)
 	@echo "AR\t$@"
 	@ar rcs $@ $^
 
 $(LIB_DIR)/libinet.a: $(OBJ_DIR)/data.o $(OBJ_DIR)/session.o $(OBJ_DIR)/mysyscall.o
+	@mkdir -p $(LIB_DIR)
+	@echo "AR\t$@"
+	@ar rcs $@ $^
+
+$(LIB_DIR)/libui.a: $(OBJ_DIR)/ui_common.o $(OBJ_DIR)/ui_menu.o $(OBJ_DIR)/ui_sequencer.o $(OBJ_DIR)/ui_manager.o
 	@mkdir -p $(LIB_DIR)
 	@echo "AR\t$@"
 	@ar rcs $@ $^
