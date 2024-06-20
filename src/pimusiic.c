@@ -7,7 +7,7 @@
 #include "sound.h"
 #include <pthread.h>
 
-#include "uiManager.h"
+#include "ui_manager.h"
 #include "request.h"
 #include "sound.h"
 #include "mysyscall.h"
@@ -25,13 +25,16 @@ void clean_up() {
 
 int main() {
     atexit(clean_up);
-    
+    // forcer la fenetre a etre de la taille RPI_LINES x RPI_COLS
+    char cmd[100];
+    sprintf(cmd, "resize -s %d %d", APP_LINES, APP_COLS);
+    system(cmd);
 	
     char pseudo[20] = "";
     char rfid[20] = "";
     music_t music;
     init_music(&music, 120);
-    choices_t choice = CHOICE_MAIN_MENU;
+    app_choices_t choice = CHOICE_MAIN_MENU;
     // Initialisation de la bibliothèque graphique
     init_ncurses();
 
