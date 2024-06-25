@@ -38,10 +38,8 @@ int create_custom_colors(int color_id, const char *color) {
 void init_ncurses() {
     // Initialisation de la fenêtre
     initscr(); // Initialisation de ncurses
-    noecho(); // Désactivation de l'affichage des caractères saisis
-    cbreak(); // Désactivation du buffering de ligne
-    init_window(stdscr); // Initialisation de la fenêtre principale
     start_color(); // Activation des couleurs
+    init_window(stdscr); // Initialisation de la fenêtre principale
 }
 
 /**
@@ -51,6 +49,8 @@ void init_ncurses() {
  */
 void init_window(WINDOW *win) {
     keypad(win, TRUE); // activation des touches spéciales
+    noecho(); // Désactivation de l'affichage des caractères saisis
+    cbreak(); // Désactivation du buffering de ligne
     curs_set(0); // Désactivation du curseur
 }
 
@@ -60,7 +60,6 @@ void init_window(WINDOW *win) {
  * \details Cette fonction s'occupe de la fin de ncurses
  */
 void exit_ncurses() {
-
     // Fin de la fenêtre
     endwin(); // Fin de ncurses
 }
