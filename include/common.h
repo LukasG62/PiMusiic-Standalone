@@ -27,9 +27,9 @@
 
     #define DEBUG_PRINT(...) fprintf(stderr, __VA_ARGS__) //!< Macro pour afficher un message de débug
 #else
-    #define UNUSED(x) (void)(x) 
-    #define UNIMPLEMENTED(string) 
-    #define DEBUG_PRINT(...)
+    #define UNUSED(x) (void)(x) //!< Macro pour supprimer les avertissements de variables inutilisées (inutile en mode release)
+    #define UNIMPLEMENTED(string) //!< Macro pour afficher le nom de la fonction non implémentée (inutile en mode release)
+    #define DEBUG_PRINT(...) //!< Macro pour afficher un message de débug (inutile en mode release)
 #endif
 
 #define ERROR(...) fprintf(stderr, __VA_ARGS__) //!< Macro pour afficher un message d'erreur
