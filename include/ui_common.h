@@ -31,6 +31,7 @@ typedef enum
     CHOICE_SEQUENCER,      /*!< Aller au séquenceur */
     CHOICE_SAVENQUIT,      /*!< Sauvegarder et quitter */
     CHOICE_CREATEMUSIC,    /*!< Créer une musique */
+    CHOICE_CREDITS,        /*!< Afficher les crédits */
     CHOICE_MAIN_MENU,      /*!< Retourner au menu principal */
 } app_choices_t;
 
