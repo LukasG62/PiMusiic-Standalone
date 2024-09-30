@@ -49,11 +49,12 @@
     #define DEBUG_PRINT(...) //!< Macro pour afficher un message de débug (inutile en mode release)
     #define OBSOLETE(string) //!< Macro pour afficher le nom de la fonction obsolète (inutile en mode release)
     #define DEBUG_LOG(...) //!< Macro pour écrire dans un fichier de log (inutile en mode release)
-
+    
 #endif
 
 #define ERROR(...) fprintf(stderr, __VA_ARGS__) //!< Macro pour afficher un message d'erreur
 #define CHECK_ALLOC(ptr) if (!ptr) { ERROR("Memory allocation failed\n"); exit(EXIT_FAILURE); } //!< Macro pour vérifier si l'allocation dynamique a réussi
+#define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0])) //!< Macro pour obtenir la taille d'un tableau
 
 #define APP_USERNAME_MAX_LENGTH 15 //!< Longueur maximale du nom d'utilisateur
 #define APP_PASSWORD_MAX_LENGTH 20 //!< Longueur maximale du mot de passe
