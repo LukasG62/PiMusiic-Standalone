@@ -17,7 +17,7 @@ OBJ_DIR=obj
 # Path to lib files
 LIB_DIR=lib
 # Compilation flags
-CPFLAGS =-I$(INCLUDE_DIR)
+CPFLAGS=-I$(INCLUDE_DIR) -Wall -Wextra 
 # Linker flags
 LB_FLAG =-lncurses -lpthread -lm -lasound
 LD_FLAGS =-L$(LIB_DIR)
@@ -62,7 +62,7 @@ $(LIB_DIR)/libui.a: $(OBJ_DIR)/ui_common.o $(OBJ_DIR)/ui_menu.o $(OBJ_DIR)/ui_se
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INCLUDE_DIR)/%.h $(INCLUDE_DIR)/common.h
 	@mkdir -p $(OBJ_DIR)
 	@echo "CC\t$@"
-	@gcc -o $@ -c  $< -I$(INCLUDE_DIR) -DSESSION_DEBUG -DDATA_DEBUG -DCOMMON_DEBUG
+	@gcc -o $@ -c  $< -DSESSION_DEBUG -DDATA_DEBUG -DCOMMON_DEBUG $(CPFLAGS)
 
 # Clean rule
 clean:
