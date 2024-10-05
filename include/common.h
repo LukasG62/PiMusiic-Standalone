@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <semaphore.h>
+#include <ctype.h>
 
 // TODO : 
 // - Support de ncurses (message d'erreur, debug, etc.) 
@@ -29,17 +30,17 @@
     #define DEBUG_PRINT(...) fprintf(stderr, __VA_ARGS__) //!< Macro pour afficher un message de débug
     
     #define DEBUG_LOG_FILE "debug.log" //!< Nom du fichier de log
-    // TODO : Ajouter la date et l'heure dans le fichier de log (utiliser strftime)
+
     // TODO : Faire en sorte que ça soit thread-safe mutex ou semaphore
     #define DEBUG_LOG(...) do { \
-        FILE *log_file = fopen(DEBUG_LOG_FILE, "a"); /* Ouvre le fichier en mode append */ \
-        if (log_file) { \
-            fprintf(log_file, "[%ld] ", time(NULL)); /* Ajoute le timestamp */ \ 
-            fprintf(log_file, __VA_ARGS__); /* Écrit dans le fichier de log */ \
-            fprintf(log_file, "\n"); /* Ajoute un retour à la ligne */ \
-            fclose(log_file); /* Ferme le fichier après écriture */ \
+        FILE *logFile = fopen(DEBUG_LOG_FILE, "a"); \
+        if (logFile) { \
+            fprintf(logFile, "[%ld] ", time(NULL)); \ 
+            fprintf(logFile, __VA_ARGS__); \
+            fprintf(logFile, "\n"); \
+            fclose(logFile); \
         } else { \
-            DEBUG_PRINT("Failed to open log file\n"); /* Affiche un message d'erreur si l'ouverture a échoué */ \
+            DEBUG_PRINT("Failed to open log file\n"); \
         } \
     } while (0) //!< Macro pour écrire dans un fichier de log
     
@@ -49,7 +50,7 @@
     #define DEBUG_PRINT(...) //!< Macro pour afficher un message de débug (inutile en mode release)
     #define OBSOLETE(string) //!< Macro pour afficher le nom de la fonction obsolète (inutile en mode release)
     #define DEBUG_LOG(...) //!< Macro pour écrire dans un fichier de log (inutile en mode release)
-    
+
 #endif
 
 #define ERROR(...) fprintf(stderr, __VA_ARGS__) //!< Macro pour afficher un message d'erreur
