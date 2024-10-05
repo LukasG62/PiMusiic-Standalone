@@ -49,6 +49,8 @@ void init_ncurses() {
  */
 void init_window(WINDOW *win) {
     keypad(win, TRUE); // activation des touches spéciales
+    // garder seulement les boutons de la souris (pas les mouvements)
+    mousemask(BUTTON1_CLICKED | BUTTON2_CLICKED | BUTTON3_CLICKED | BUTTON4_CLICKED | BUTTON5_CLICKED, NULL);
     noecho(); // Désactivation de l'affichage des caractères saisis
     cbreak(); // Désactivation du buffering de ligne
     curs_set(0); // Désactivation du curseur

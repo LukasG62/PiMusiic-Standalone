@@ -43,6 +43,7 @@ typedef enum
 typedef enum
 {
     COLOR_LIGHTGREY = 10, /*!< Gris clair */
+    COLOR_ORANGE,         /*!< Orange */
 } custom_colors_t;
 
 /**
