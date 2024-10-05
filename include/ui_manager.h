@@ -29,12 +29,11 @@ app_choices_t show_main_menu();
 /**
  * @fn choices_t show_connection_menu(char *rfid, char *username)
  * @brief Affichage du menu de connexion et effectue la connexion
- * @param rfid Le rfid de l'utilisateur
- * @param username Le nom d'utilisateur de l'utilisateur
+ * @param credentials Les identifiants de connexion
  * @return app_choices_t 
- * @note la fonction remplit les variables rfid et username
+ * @note la fonction remplit les identifiants de connexion
  */
-app_choices_t show_connection_menu(char *rfid, char *username);
+app_choices_t show_connection_menu(menu_credentials_t *credentials);
 
 /**
  * @fn choices_t show_list_music(char *rfid, music_t *music)
@@ -77,6 +76,14 @@ app_choices_t show_create_music_menu(music_t *music, char *rfid);
  * @warning la musique et connected doit être allouée et initialisée
  */
 app_choices_t show_sequencer(music_t *music, char *connected);
+
+/**
+ * @fn app_choices_t show_credits()
+ * @brief Affiche les crédits de l'application
+ * @return app_choices_t 
+ */
+app_choices_t show_credits();
+
 
 /**
  * @fn void init_colors()

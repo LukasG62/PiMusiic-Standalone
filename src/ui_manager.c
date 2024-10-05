@@ -1,6 +1,6 @@
 /**
  * \file uiManager.c
- * \details Contiens les fonctions de toutes les interfaces de l'application
+ * \details Contient les fonctions de toutes les interfaces de l'application
  * \note Dedans il y a aussi des fonctions helpers pour l'affichage (à déplacer dans un autre fichier ?)
  * \author Lukas Grando
  * \version 1.0
@@ -19,21 +19,6 @@
  */
 void show_request_error(const char *message);
 
-/**
- * \fn choice_t create_menu(const char *choices[], int n_choices, int highlight, choices_t choices)
- * \brief Création d'un menu ncurses
- * \details Cette fonction crée un menu ncurses avec choix paginés
- * \param title Le titre du menu
- * \param text Le texte du menu (optionnel)
- * \param choices[] Les choix du menu
- * \param nbChoices Le nombre de choix
- * \param highlight La couleur du choix sélectionné
- * \param choices Valeur de retour de chaque choix
- * 
-*/
-app_choices_t create_menu(const char *title, const char *text, char **choices, int nbChoices, int highlight, app_choices_t *choices_return);
-
-
 /**********************************************************************************************************************/
 /*                                           Public Fonction Definitions                                              */
 /**********************************************************************************************************************/
@@ -47,46 +32,37 @@ app_choices_t create_menu(const char *title, const char *text, char **choices, i
  * \see app_choices_t
  */
 app_choices_t show_main_menu() {
-    // On définit le titre du menu
-    char title[] = "Pimusic Application";
-    // On définit le texte du menu
-    char text[] = "Welcome to Pimusic, please choose an option :";
-    // On définit les choix du menu
-    char *choices[] = {
-        "1. Connect to retrieve music",
-        "2. Create music",
-        "3. Quit"
-    };
-    // On récupère le nombre de choix
-    int n_choices = sizeof(choices) / sizeof(char *);
-    // Les valeurs de retour de chaque choix
-    app_choices_t choices_return[] = {
-        CHOICE_CONECTION_MENU,
-        CHOICE_CREATEMUSIC,
-        CHOICE_QUITAPP,
-    };
-
-    // On affiche le menu
-    return create_menu(title, text, choices, n_choices, 0, choices_return);
-
+    WINDOW *body = NULL;
+    // Initialisation du menu
+    ui_menu_t *menu = init_menu("Welcome to PiMusiic", "Please select an option :");
+    body = menu->body;
+    // affichage d'un body enumérable
+    app_choices_t choices[] = {CHOICE_CONECTION_MENU, CHOICE_CREATEMUSIC, CHOICE_HELP, CHOICE_QUITAPP, CHOICE_CREDITS};
+    const char *labels[] = {"Connection", "Create music", "Help", "Quit", "Credits"};
+    const size_t count = ARRAY_SIZE(choices);
+    app_choices_t choice = create_enumerable_body(menu, choices, count, labels, CHOICE_QUITAPP);
+    destroy_menu(menu);
+    return choice;
 }
 
 /**
  * @fn app_choices_t show_connection_menu(char *rfid, char *username)
  * @brief Affichage du menu de connexion et effectue la connexion
- * @param rfid Le rfid de l'utilisateur
- * @param username Le nom d'utilisateur de l'utilisateur
+ * @param credentials Les identifiants de connexion
  * @return app_choices_t 
- * @note la fonction remplit les variables rfid et username
+ * @note la fonction remplit les identifiants de connexion
  */
-app_choices_t show_connection_menu(char *rfid, char *username) {
-    UNIMPLEMENTED("show_connection_menu");
-    // Affichage du menu
-    //init_menu("Connection", "Please enter your login information :", 0);
-    // On fait une requête de connexion
-    //mpp_response_t response = client_request_handler(MPP_CONNECT, rfid, NULL, -1);
-    //wgetch(stdscr);
-    return CHOICE_CONECTION_MENU;
+app_choices_t show_connection_menu(menu_credentials_t *credentials) {
+    ui_menu_t *menu = init_menu("Connection", "Please enter your login information :");
+    app_choices_t choices = CHOICE_CONECTION_MENU;
+    // creation du corps du menu
+    // printf something in body to see if it's displayed
+    display_menu(menu);
+    menu_credentials_t userInput = create_credentials_body(menu->body);
+    destroy_menu(menu);
+
+    // todo: Make request 
+    return CHOICE_MAIN_MENU;
 }
 
 /**
@@ -398,6 +374,16 @@ app_choices_t show_sequencer(music_t *music, char *rfid) {
     return CHOICE_MAIN_MENU;
 }
 
+
+app_choices_t show_credits() {
+    ui_menu_t *menu = init_menu("Credits", "");
+    display_menu(menu);
+    WINDOW *body = menu->body;
+    app_choices_t choice = create_credits_body(body, CHOICE_MAIN_MENU);
+    destroy_menu(menu);
+    return choice;
+}
+
 /**********************************************************************************************************************/
 /*                                           Private Fonction Definitions                                             */
 /**********************************************************************************************************************/
@@ -409,16 +395,17 @@ app_choices_t show_sequencer(music_t *music, char *rfid) {
  * @param message Le message d'erreur
  */
 void show_request_error(const char *message) {
-    UNIMPLEMENTED("show_request_error");
-    clear();
-    //init_menu("Error", "", 1);
-    attron(COLOR_PAIR(COLOR_PAIR_MENU_WARNING) | A_BOLD);
-    mvprintw(3, 4, "%s", message);
-    attroff(COLOR_PAIR(COLOR_PAIR_MENU_WARNING) | A_BOLD);
-    // On attend que l'utilisateur appuie sur un bouton
-
-    mvprintw(APP_LINES - 3, 4, "%s", "[BTN4] Return to main menu");
-    refresh();
+    clear(); // On nettoie l'écran pour afficher le menu
+    ui_menu_t *menu = init_menu("Error", "");
+    WINDOW *body = menu->body;
+    wattron(body, COLOR_PAIR(COLOR_PAIR_MENU_WARNING) | A_BOLD);
+    mvwprintw(body, 1, 1, "%s", "Oops, something went wrong !");
+    mvwprintw(body, 2, 1, "%s", message);
+    wattroff(body, COLOR_PAIR(COLOR_PAIR_MENU_WARNING) | A_BOLD);
+    display_menu(menu);
+    
+    wgetch(body);
+    destroy_menu(menu);
 }
 
 /**
@@ -426,6 +413,8 @@ void show_request_error(const char *message) {
  * @brief Initialisation des couleurs
  */
 void init_colors() {
+    create_custom_colors(COLOR_LIGHTGREY, "#D3D3D3");
+    create_custom_colors(COLOR_ORANGE, "#FFA500");
     init_menu_colors();
     init_sequencer_colors();
 }

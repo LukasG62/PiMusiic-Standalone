@@ -13,7 +13,7 @@
 #define MENU_MARGIN 2 /*!< Marge du menu */
 #define MENU_HEADER_HEIGHT 4 /*!< Hauteur de l'entête du menu */
 #define MENU_HEADER_WIDTH 54 /*!< Largeur de l'entête du menu */
-#define MENU_MAX_ITEMS 6 /*!< Nombre maximum d'éléments sur une page de menu */
+#define MENU_MAX_ITEMS 9 /*!< Nombre maximum d'éléments sur une page de menu */
 #define MENU_FOOTER_HEIGHT 5 /*!< Hauteur du pied de page du menu */
 #define MENU_FOOTER_X0 MENU_MARGIN /*!< Position X du pied de page du menu */
 #define MENU_FOOTER_Y0 APP_LINES - MENU_FOOTER_HEIGHT /*!< Position Y du pied de page du menu */
@@ -26,7 +26,7 @@
 // Touches de navigation des menus
 #define MENU_KEY_UP KEY_UP /*!< Touche pour monter dans le menu */
 #define MENU_KEY_DOWN KEY_DOWN /*!< Touche pour descendre dans le menu */
-#define MENU_KEY_ENTER KEY_ENTER /*!< Touche pour valider un choix */
+#define MENU_KEY_ENTER 10 /*!< Touche pour valider un choix */
 #define MENU_KEY_ESCAPE 27 /*!< Touche pour annuler un choix */
 
 
@@ -43,14 +43,43 @@ typedef struct {
 } ui_menu_t;
 
 /**
+ * \struct menu_form_input_params_t
+ * \brief Structure pour les paramètres d'un champ de formulaire
+ * \details Cette structure permet de définir les paramètres d'un champ de formulaire
+ */
+typedef struct {
+    int x; /*!< Position X du champ */
+    int y; /*!< Position Y du champ */
+    char isPassword; /*!< Indique si le champ est un mot de passe */
+    char isFocused; /*!< Indique si le champ est en focus */
+    char *label; /*!< Label du champ */
+    char *value; /*!< Valeur du champ */
+    int maxLength; /*!< Longueur maximale du champ */
+    int stopFocusKey; /*!< Touche pour arrêter le focus */
+} menu_form_input_params_t;
+
+
+/**
+ * \struct menu_credentials_t
+ * \brief Structure pour les identifiants de connexion
+ * \details Cette structure permet de définir les identifiants de connexion
+ */
+typedef struct {
+    char username[APP_USERNAME_MAX_LENGTH]; /*!< Nom d'utilisateur */
+    char password[APP_PASSWORD_MAX_LENGTH]; /*!< Mot de passe */
+} menu_credentials_t;
+
+/**
  * \enum menu_color_pairs_t
  * \brief Enumération des paires de couleurs utilisées dans les menus
  */
 typedef enum {
     COLOR_PAIR_MENU = 10,    /*!< Couleur du menu */
-    COLOR_PAIR_MENU_BACKGROUND, /*!< Couleur de fond du menu */
-    COLOR_PAIR_MENU_WARNING, /*!< Couleur du menu en cas d'erreur */
-    COLOR_PAIR_MENU_PROMPT,  /*!< Couleur du menu d'entrée utilisateur */
+    COLOR_PAIR_MENU_WARNING, /*!< Couleur du menu pour du texte d'avertissement */
+    COLOR_PAIR_MENU_PROMPT,  /*!< Couleur du menu pour du texte de saisie */
+    COLOR_PAIR_MENU_INFO,    /*!< Couleur du menu pour du texte d'information */
+    COLOR_PAIR_MENU_ERROR,   /*!< Couleur du menu pour du texte d'erreur */
+    COLOR_PAIR_MENU_END,    /*!< Fin des couleurs du menu */
 } menu_color_pairs_t;
 
 /**
@@ -118,6 +147,35 @@ void refresh_menu(ui_menu_t *menu);
  */
 app_choices_t create_enumerable_body(ui_menu_t *menu, app_choices_t *choices, int count, const char **labels, app_choices_t escapeChoice);
 
+/**
+ * \fn void create_input_field(int win, int y, int x, const char *label, char *value, int length, int isPassword)
+ * \brief Création d'un champ de saisie
+ * \details Cette fonction crée un champ de saisie en affichant un label et la valeur saisie
+ * Elle ne s'occupe pas de la gestion des touches ni de la saisie seulement de l'affichage
+ * \param win La fenêtre du champ de saisie
+ * \param params Les paramètres du champ de saisie
+ * \return WINDOW* La fenêtre du champ de saisie
+ * \note Si le pointeur win est NULL, la fonction crée une nouvelle fenêtre et l'assigne à win
+ * \warning La fenêtre doit être détruite après utilisation
+ */
+WINDOW *create_input_field(WINDOW **win, WINDOW *parent,  menu_form_input_params_t *params);
+
+/**
+ * \fn menu_credentials_t create_credentials_body(WINDOW *body)
+ * \brief Création du corps d'un menu de connexion (identifiants)
+ * \param body La fenêtre du corps du menu
+ * \details Cette fonction crée le corps d'un menu de connexion en affichant le titre, le texte et les champs d'entrée pour les identifiants
+ */
+menu_credentials_t create_credentials_body(WINDOW *body);
+
+/**
+ * \fn menu_create_credits_body(WINDOW *menu, app_choices_t choice)
+ * \brief Création du corps d'un menu de crédits
+ * \details Cette fonction crée le corps d'un menu de crédits en affichant le titre, le texte et les crédits
+ * \param body La structure du menu
+ * \return app_choices_t retourne le choix passé en paramètre si l'utilisateur appuie sur n'importe quelle touche
+ */
+app_choices_t create_credits_body(WINDOW *body, app_choices_t choice);
 
 
 #endif // UI_MENU_H
