@@ -42,22 +42,34 @@ typedef struct {
     WINDOW *body;    /*!< Corps du menu */
 } ui_menu_t;
 
+
+/**
+ * \enum menu_form_input_type_t
+ * \brief Enumération des types de champs de formulaire
+ */
+typedef enum {
+    MENU_FORM_INPUT_TEXT, /*!< Champ de texte */
+    MENU_FORM_INPUT_NUMBER, /*!< Champ numérique */
+    MENU_FORM_INPUT_DATE, /*!< Champ de date */
+    MENU_FORM_INPUT_TIME, /*!< Champ d'heure */
+    MENU_FORM_INPUT_PASSWORD /*!< Champ de mot de passe */
+} menu_form_input_type_t;
+
 /**
  * \struct menu_form_input_params_t
  * \brief Structure pour les paramètres d'un champ de formulaire
  * \details Cette structure permet de définir les paramètres d'un champ de formulaire
  */
 typedef struct {
+    menu_form_input_type_t type; /*!< Type du champ */
     int x; /*!< Position X du champ */
     int y; /*!< Position Y du champ */
-    char isPassword; /*!< Indique si le champ est un mot de passe */
     char isFocused; /*!< Indique si le champ est en focus */
     char *label; /*!< Label du champ */
     char *value; /*!< Valeur du champ */
     int maxLength; /*!< Longueur maximale du champ */
     int stopFocusKey; /*!< Touche pour arrêter le focus */
 } menu_form_input_params_t;
-
 
 /**
  * \struct menu_credentials_t

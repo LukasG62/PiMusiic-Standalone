@@ -262,7 +262,7 @@ WINDOW *create_input_field(WINDOW **win, WINDOW *parent, menu_form_input_params_
     box(*win, 0, 0);
 
     // affichage de la valeur du champ
-    if(params->isPassword) {
+    if(params->type == MENU_FORM_INPUT_PASSWORD) {
         for(int i = 0; i < lenValue; i++) {
             mvwprintw(*win, 1, 2 + i, "*");
         }
@@ -325,7 +325,7 @@ WINDOW *create_input_field(WINDOW **win, WINDOW *parent, menu_form_input_params_
         }
         // réaffichage de la valeur du champ
         mvwprintw(*win, 1, 2, "%*s", fieldWidth - 3, " ");
-        if(params->isPassword) {
+        if(params->type == MENU_FORM_INPUT_PASSWORD) {
             for(int i = 0; i < lenValue; i++) {
                 mvwprintw(*win, 1, 2 + i, "*");
             }
@@ -362,7 +362,7 @@ menu_credentials_t create_credentials_body(WINDOW *body) {
     menu_form_input_params_t usernameParams = {
         .x = MENU_MARGIN,
         .y = MENU_MARGIN + 2,
-        .isPassword = 0,
+        .type = MENU_FORM_INPUT_TEXT,
         .isFocused = 0,
         .label = "Username",
         .value = credentials.username,
@@ -372,7 +372,7 @@ menu_credentials_t create_credentials_body(WINDOW *body) {
     menu_form_input_params_t passwordParams = {
         .x = MENU_MARGIN,
         .y = MENU_MARGIN + 6,
-        .isPassword = 1,
+        .type = MENU_FORM_INPUT_PASSWORD,
         .isFocused = 0,
         .label = "Password",
         .value = credentials.password,
@@ -451,7 +451,6 @@ app_choices_t create_credits_body(WINDOW *body, app_choices_t choice) {
         if(keyPressed != ERR) {
             return choice;
         }
-        DEBUG_LOG("X: %d, Y: %d", x, y);
 
         x += (direction == 0) - (direction == 2); // +1 droite, -1 gauche
         y += (direction == 1) - (direction == 3); // +1 bas, -1 haut
