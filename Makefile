@@ -75,5 +75,5 @@ clean:
 
 docs: Doxyfile
 	@echo "MAN\t$@"
-
+	@doxygen Doxyfile
 ##
