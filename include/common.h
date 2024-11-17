@@ -35,7 +35,7 @@
     #define DEBUG_LOG(...) do { \
         FILE *logFile = fopen(DEBUG_LOG_FILE, "a"); \
         if (logFile) { \
-            fprintf(logFile, "[%ld] ", time(NULL)); \ 
+            fprintf(logFile, "[%ld] ", time(NULL)); \
             fprintf(logFile, __VA_ARGS__); \
             fprintf(logFile, "\n"); \
             fclose(logFile); \
