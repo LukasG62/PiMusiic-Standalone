@@ -157,7 +157,7 @@ typedef struct {
 typedef struct {
 	int id; /*!< Identifiant de la musique*/
 	char name[MUSIC_NAME_MAX_LENGTH];/*!< Nom de la musique*/
-	time_t date;/*!< Date de création de la musique*/
+	struct timeval date;/*!< Date de création de la musique*/
 	channel_t channels [MUSIC_MAX_CHANNELS];/*!< Les canaux disponibles */
 	short bpm;/*!< Le bpm de la musique*/
 }music_t;
