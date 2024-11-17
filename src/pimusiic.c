@@ -7,7 +7,7 @@
 #include "sound.h"
 #include <pthread.h>
 
-#include "uiManager.h"
+#include "ui/ui_manager.h"
 #include "request.h"
 #include "sound.h"
 #include "mysyscall.h"
@@ -25,15 +25,19 @@ void clean_up() {
 
 int main() {
     atexit(clean_up);
-    
-	
-    char pseudo[20] = "";
-    char rfid[20] = "";
+    // forcer la fenetre a etre de la taille RPI_LINES x RPI_COLS
+    char cmd[100];
+    sprintf(cmd, "resize -s %d %d", APP_LINES, APP_COLS);
+    system(cmd);
+    menu_credentials_t credentials;
     music_t music;
     init_music(&music, 120);
-    choices_t choice = CHOICE_MAIN_MENU;
+    app_choices_t choice = CHOICE_MAIN_MENU;
     // Initialisation de la bibliothèque graphique
     init_ncurses();
+    init_colors();
+    credentials.username[0] = '\0';
+    credentials.password[0] = '\0';
 
     while (choice != CHOICE_QUITAPP) {
         switch (choice) {
@@ -45,35 +49,36 @@ int main() {
                 break;
 
             case CHOICE_CONECTION_MENU:
-                if(*pseudo == '\0') choice = show_connection_menu(rfid, pseudo);
-                else choice = show_list_music(rfid, &music);
+                choice = show_connection_menu(&credentials);
                 break;
 
             case CHOICE_CREATEMUSIC:
-                choice = show_create_music_menu(&music, rfid);
+                choice = show_create_music_menu(&music, &credentials);
                 break;
 
             case CHOICE_MENU_LIST:
-                choice = show_list_music(rfid, &music);
+                choice = show_list_music(credentials.username, &music);
                 break;
 
             case CHOICE_SEQUENCER:
-                choice = show_sequencer(&music, rfid);
+                choice = show_sequencer(&music, credentials.username);
                 break;
 
             case CHOICE_SAVENQUIT:
                 choice = CHOICE_MAIN_MENU;
                 break;
             
+            case CHOICE_CREDITS:
+                choice = show_credits();
+                break;
             default:
                 choice = CHOICE_MAIN_MENU;
                 break;
         }
 
         // On nettoie l'écran
-        clear();
+        wclear(stdscr);
+        wrefresh(stdscr);
     }
-    endwin();
-  
-    return 0;
+    clean_up();
 }

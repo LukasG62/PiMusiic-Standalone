@@ -17,6 +17,7 @@
 /* ------------------------------------------------------------------------ */
 #define CHANNEL_MAX_NOTES 4096 /*!< Nombre de notes maximum dans un channel doit tenir sur n symboles hexadécimaux */
 #define MUSIC_MAX_CHANNELS 3 /*!< Nombre de channels maximum dans une musique */
+#define MUSIC_NAME_MAX_LENGTH 32 /*!< Longueur maximale du nom de la musique */
 
 //Fréquences des notes
 #define REF_OCTAVE 3 /*!< Octave de référence */
@@ -154,6 +155,8 @@ typedef struct {
  * \brief Structure de la musique
  */
 typedef struct {
+	int id; /*!< Identifiant de la musique*/
+	char name[MUSIC_NAME_MAX_LENGTH];/*!< Nom de la musique*/
 	struct timeval date;/*!< Date de création de la musique*/
 	channel_t channels [MUSIC_MAX_CHANNELS];/*!< Les canaux disponibles */
 	short bpm;/*!< Le bpm de la musique*/

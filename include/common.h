@@ -10,8 +10,11 @@
 #define COMMON_H
 
 #include <stdio.h>
+#include <time.h>
 #include <stdlib.h>
 #include <string.h>
+#include <semaphore.h>
+#include <ctype.h>
 
 // TODO : 
 // - Support de ncurses (message d'erreur, debug, etc.) 
@@ -25,13 +28,37 @@
     #define OBSOLETE(string) fprintf(stderr, "Obsolete: %s\n", string) //!< Macro pour afficher le nom de la fonction obsolète
 
     #define DEBUG_PRINT(...) fprintf(stderr, __VA_ARGS__) //!< Macro pour afficher un message de débug
+    
+    #define DEBUG_LOG_FILE "debug.log" //!< Nom du fichier de log
+
+    // TODO : Faire en sorte que ça soit thread-safe mutex ou semaphore
+    #define DEBUG_LOG(...) do { \
+        FILE *logFile = fopen(DEBUG_LOG_FILE, "a"); \
+        if (logFile) { \
+            fprintf(logFile, "[%ld] ", time(NULL)); \
+            fprintf(logFile, __VA_ARGS__); \
+            fprintf(logFile, "\n"); \
+            fclose(logFile); \
+        } else { \
+            DEBUG_PRINT("Failed to open log file\n"); \
+        } \
+    } while (0) //!< Macro pour écrire dans un fichier de log
+    
 #else
-    #define UNUSED(x) (void)(x) 
-    #define UNIMPLEMENTED(string) 
-    #define DEBUG_PRINT(...)
+    #define UNUSED(x) (void)(x) //!< Macro pour supprimer les avertissements de variables inutilisées (inutile en mode release)
+    #define UNIMPLEMENTED(string) //!< Macro pour afficher le nom de la fonction non implémentée (inutile en mode release)
+    #define DEBUG_PRINT(...) //!< Macro pour afficher un message de débug (inutile en mode release)
+    #define OBSOLETE(string) //!< Macro pour afficher le nom de la fonction obsolète (inutile en mode release)
+    #define DEBUG_LOG(...) //!< Macro pour écrire dans un fichier de log (inutile en mode release)
+
 #endif
 
 #define ERROR(...) fprintf(stderr, __VA_ARGS__) //!< Macro pour afficher un message d'erreur
 #define CHECK_ALLOC(ptr) if (!ptr) { ERROR("Memory allocation failed\n"); exit(EXIT_FAILURE); } //!< Macro pour vérifier si l'allocation dynamique a réussi
+#define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0])) //!< Macro pour obtenir la taille d'un tableau
+
+#define APP_USERNAME_MAX_LENGTH 15 //!< Longueur maximale du nom d'utilisateur
+#define APP_PASSWORD_MAX_LENGTH 20 //!< Longueur maximale du mot de passe
+
 
 #endif // COMMON_H
