@@ -10,10 +10,14 @@ BIN_DIR?=bin
 PROG_PC=$(addprefix $(BIN_DIR)/, $(PROG))
 # Path to source codes
 SRC_DIR=src
+SRC_UI_DIR=$(SRC_DIR)/ui
+
 # Path to header files
 INCLUDE_DIR=include
 # Path to obj files 
 OBJ_DIR=obj
+OBJ_UI_DIR=$(OBJ_DIR)/ui
+
 # Path to lib files
 LIB_DIR=lib
 # Compilation flags
@@ -54,13 +58,14 @@ $(LIB_DIR)/libinet.a: $(OBJ_DIR)/data.o $(OBJ_DIR)/session.o $(OBJ_DIR)/mysyscal
 	@echo "AR\t$@"
 	@ar rcs $@ $^
 
-$(LIB_DIR)/libui.a: $(OBJ_DIR)/ui_common.o $(OBJ_DIR)/ui_menu.o $(OBJ_DIR)/ui_sequencer.o $(OBJ_DIR)/ui_manager.o
+$(LIB_DIR)/libui.a: $(OBJ_UI_DIR)/ui_common.o $(OBJ_UI_DIR)/ui_menu.o $(OBJ_UI_DIR)/ui_sequencer.o $(OBJ_UI_DIR)/ui_manager.o $(OBJ_UI_DIR)/ui_form.o
 	@mkdir -p $(LIB_DIR)
 	@echo "AR\t$@"
 	@ar rcs $@ $^
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INCLUDE_DIR)/%.h $(INCLUDE_DIR)/common.h
 	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(OBJ_UI_DIR)
 	@echo "CC\t$@"
 	@gcc -o $@ -c  $< -DSESSION_DEBUG -DDATA_DEBUG -DCOMMON_DEBUG $(CPFLAGS)
 
@@ -70,6 +75,5 @@ clean:
 
 docs: Doxyfile
 	@echo "MAN\t$@"
-	@doxygen Doxyfile 
 
 ##
