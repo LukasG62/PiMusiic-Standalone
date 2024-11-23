@@ -5,7 +5,7 @@
  * @author Lukas Grando
  */
 
-#include "ui_common.h"
+#include "ui/ui_common.h"
 
 /**********************************************************************************************************************/
 /*                                           Public Fonction Definitions                                              */

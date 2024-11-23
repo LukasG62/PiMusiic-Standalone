@@ -5,7 +5,7 @@
  * \author Lukas Grando
  * \version 1.0
  */
-#include "ui_manager.h"
+#include "ui/ui_manager.h"
 
 /**********************************************************************************************************************/
 /*                                           Private functions                                                        */
@@ -32,10 +32,8 @@ void show_request_error(const char *message);
  * \see app_choices_t
  */
 app_choices_t show_main_menu() {
-    WINDOW *body = NULL;
     // Initialisation du menu
     ui_menu_t *menu = init_menu("Welcome to PiMusiic", "Please select an option :");
-    body = menu->body;
     // affichage d'un body enumérable
     app_choices_t choices[] = {CHOICE_CONECTION_MENU, CHOICE_CREATEMUSIC, CHOICE_HELP, CHOICE_QUITAPP, CHOICE_CREDITS};
     const char *labels[] = {"Connection", "Create music", "Help", "Quit", "Credits"};
@@ -159,78 +157,73 @@ app_choices_t show_list_music(char *rfid, music_t *music) {
 
 /**
  * @fn app_choices_t show_create_music_menu(music_t *music, char *rfid)
- * @brief La fonction qui affiche le menu de création de musique
+ * @brief Affiche le menu de création de musique
  * @param music La musique à créer
- * @param rfid Le rfid de l'utilisateur
+ * @param credentials Les identifiants de connexion
  * @return app_choices_t 
- * @note la fonction remplit la musique et le rfid
- * @warning la musique et le rfid doivent être alloués et initialisés
+ * @note la fonction remplit la musique passée en paramètre
+ * @note Si credentials est NULL, la musique ne sera pas sauvegardée sur le serveur
+ * @warning la musique doit être allouée et initialisée
  */
-app_choices_t show_create_music_menu(music_t *music, char *rfid) {
-    //init_menu("Create music", "", 1);
-    UNIMPLEMENTED("show_create_music_menu");
-    init_music(music, 120);
-    music->bpm = 120;
-    char date[20];
-    int oldBpm = music->bpm;
-    gettimeofday(&music->date, NULL);
-    show_date(music->date.tv_sec, date);
-
-    if(*rfid == '\0') {
-        attron(COLOR_PAIR(COLOR_PAIR_MENU_WARNING) | A_BOLD);
-        mvprintw(3, 4, "%s", "Warning : You're in offline mode, you can't save your music !");
-        attroff(COLOR_PAIR(COLOR_PAIR_MENU_WARNING) | A_BOLD);
+app_choices_t show_create_music_menu(music_t *music, menu_credentials_t *credentials) {
+    ui_menu_t *menu = init_menu("Music Creation", "");
+    WINDOW *body = menu->body;
+    if(credentials != NULL) {
+        // afficher un message d'avertissement pour dire que la musique ne sera pas sauvegardée sur le serveur
+        wattron(body, COLOR_PAIR(COLOR_PAIR_MENU_WARNING) | A_BOLD);
+        mvwprintw(body, 1, MENU_MARGIN, "%s", "You're not connected, the music will not be stored on the server !");
+        wattroff(body, COLOR_PAIR(COLOR_PAIR_MENU_WARNING) | A_BOLD);
     }
-    attron(COLOR_PAIR(COLOR_PAIR_MENU | A_BOLD));
-    mvprintw(5, 4, "%s", "Creation date : ");
-    attroff(COLOR_PAIR(COLOR_PAIR_MENU | A_BOLD));
-    attron(COLOR_PAIR(COLOR_PAIR_MENU_PROMPT));
-    mvprintw(5, 20, "%s", date);
-    attroff(COLOR_PAIR(COLOR_PAIR_MENU_PROMPT));
+    // Show 2 fields for the music name and the bpm of the music
+    form_input_win_t *nameField, *bpmField = NULL;
 
-    attron(COLOR_PAIR(COLOR_PAIR_MENU | A_BOLD));
-    mvprintw(7, 4, "%s", "Select the bpm by pressing the arrows : ");
+    mvwprintw(body, 5, MENU_MARGIN, "Creating a new music");
+    mvwprintw(body, 6, MENU_MARGIN, "Please enter the music name and the BPM :");
+        
+    nameField = create_input_field(body, MENU_MARGIN, 8);
+    set_input_label(nameField, "Music name");
+    set_input_color(nameField, COLOR_PAIR_MENU);
+    set_input_focus_color(nameField, COLOR_PAIR_MENU_PROMPT);
+    set_input_value(nameField, (void *)music->name);
+    configure_text_input(nameField, MUSIC_NAME_MAX_LENGTH, 0);
+
+    bpmField = create_input_field(body, MENU_MARGIN + MUSIC_NAME_MAX_LENGTH + FORM_PADDING*2 + 2, 8);
+    set_input_label(bpmField, "BPM");
+    set_input_color(bpmField, COLOR_PAIR_MENU);
+    set_input_focus_color(bpmField, COLOR_PAIR_MENU_PROMPT);
+    set_input_value(bpmField, (void *)&(music->bpm));
+    configure_number_input(bpmField, 60, 240);
     
-    attroff(COLOR_PAIR(COLOR_PAIR_MENU | A_BOLD));
-    attron(COLOR_PAIR(COLOR_PAIR_MENU_PROMPT));
-    mvprintw(7, 45, "%3d", music->bpm);
-    attroff(COLOR_PAIR(COLOR_PAIR_MENU_PROMPT));
+    display_menu(menu);
+    display_input_field(nameField);
+    display_input_field(bpmField);
 
-    // Option pour créer ou retourner au menu principal en bas de l'écran
-    attron(COLOR_PAIR(COLOR_PAIR_MENU | A_BOLD));
-    mvprintw(APP_LINES - 3, 4, "%s", "[BTN0] Return to main menu");
-    mvprintw(APP_LINES - 3, APP_COLS-22, "%s", "[BTN1] Create music");
-    attroff(COLOR_PAIR(COLOR_PAIR_MENU | A_BOLD));
-    refresh();
-    // On gère la navigation dans le menu
-    int c;
     while(1) {
-        c = getch();
+        mvwprintw(body, 12, MENU_MARGIN, "[ENTER] Submit");
+        wrefresh(body);
 
-        switch(c) {
-            case KEY_UP:
-                if (music->bpm < 300) music->bpm++;
-                break;
-            case KEY_DOWN:
-                if (music->bpm > 0) music->bpm--;
-                break;
-            case MENU_KEY_ENTER:
-                return CHOICE_SEQUENCER;
-            
-            case MENU_KEY_ESCAPE:
-                return CHOICE_MAIN_MENU;
+        focus_input_field(nameField);
+        handle_input_field(nameField, (int)'\t');
 
-            break;
+        focus_input_field(bpmField);
+        handle_input_field(bpmField, (int)'\t');
+
+        wattron(body, A_REVERSE);
+        mvwprintw(body, 12, MENU_MARGIN, "[ENTER] Submit");
+        wattroff(body, A_REVERSE);
+
+        // Si on valide la saisie
+        int keyPressed = wgetch(body);
+        if(keyPressed == MENU_KEY_ENTER) {
+            destroy_input_field(nameField);
+            destroy_input_field(bpmField);
+            destroy_menu(menu);
+            return CHOICE_SEQUENCER;
         }
-        attron(COLOR_PAIR(COLOR_PAIR_MENU_PROMPT));
-        mvprintw(7, 45, "%3d", music->bpm);
-        attroff(COLOR_PAIR(COLOR_PAIR_MENU_PROMPT));
+        // On reboucle sur le premier champ
 
-        if(oldBpm != music->bpm) {
-            oldBpm = music->bpm;
-        }
     }
-    refresh();
+    return CHOICE_MAIN_MENU;
 }
 
 /**

@@ -55,15 +55,16 @@ app_choices_t show_list_music(char *rfid, music_t *music);
 void show_date(time_t timestamp, char *chaine);
 
 /**
- * @fn choices_t show_create_music_menu(music_t *music, char *rfid)
- * @brief La fonction qui affiche le menu de création de musique
+ * @fn app_choices_t show_create_music_menu(music_t *music, char *rfid)
+ * @brief Affiche le menu de création de musique
  * @param music La musique à créer
- * @param rfid Le rfid de l'utilisateur
+ * @param credentials Les identifiants de connexion
  * @return app_choices_t 
- * @note la fonction remplit la musique et le rfid
- * @warning la musique et le rfid doivent être alloués et initialisés
+ * @note la fonction remplit la musique passée en paramètre
+ * @note Si credentials est NULL, la musique ne sera pas sauvegardée sur le serveur
+ * @warning la musique doit être allouée et initialisée
  */
-app_choices_t show_create_music_menu(music_t *music, char *rfid);
+app_choices_t show_create_music_menu(music_t *music, menu_credentials_t *credentials) ;
 
 
 /**
