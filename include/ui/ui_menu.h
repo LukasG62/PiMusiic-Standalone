@@ -8,6 +8,7 @@
 #define UI_MENU_H
 
 #include "ui_common.h" //!< Inclusion des macros communes à l'interface graphique
+#include "ui_form.h" //!< Inclusion des formulaires de l'interface graphique
 
 
 #define MENU_MARGIN 2 /*!< Marge du menu */
@@ -54,22 +55,6 @@ typedef enum {
     MENU_FORM_INPUT_TIME, /*!< Champ d'heure */
     MENU_FORM_INPUT_PASSWORD /*!< Champ de mot de passe */
 } menu_form_input_type_t;
-
-/**
- * \struct menu_form_input_params_t
- * \brief Structure pour les paramètres d'un champ de formulaire
- * \details Cette structure permet de définir les paramètres d'un champ de formulaire
- */
-typedef struct {
-    menu_form_input_type_t type; /*!< Type du champ */
-    int x; /*!< Position X du champ */
-    int y; /*!< Position Y du champ */
-    char isFocused; /*!< Indique si le champ est en focus */
-    char *label; /*!< Label du champ */
-    char *value; /*!< Valeur du champ */
-    int maxLength; /*!< Longueur maximale du champ */
-    int stopFocusKey; /*!< Touche pour arrêter le focus */
-} menu_form_input_params_t;
 
 /**
  * \struct menu_credentials_t
@@ -158,19 +143,6 @@ void refresh_menu(ui_menu_t *menu);
  * \see init_menu()
  */
 app_choices_t create_enumerable_body(ui_menu_t *menu, app_choices_t *choices, int count, const char **labels, app_choices_t escapeChoice);
-
-/**
- * \fn void create_input_field(int win, int y, int x, const char *label, char *value, int length, int isPassword)
- * \brief Création d'un champ de saisie
- * \details Cette fonction crée un champ de saisie en affichant un label et la valeur saisie
- * Elle ne s'occupe pas de la gestion des touches ni de la saisie seulement de l'affichage
- * \param win La fenêtre du champ de saisie
- * \param params Les paramètres du champ de saisie
- * \return WINDOW* La fenêtre du champ de saisie
- * \note Si le pointeur win est NULL, la fonction crée une nouvelle fenêtre et l'assigne à win
- * \warning La fenêtre doit être détruite après utilisation
- */
-WINDOW *create_input_field(WINDOW **win, WINDOW *parent,  menu_form_input_params_t *params);
 
 /**
  * \fn menu_credentials_t create_credentials_body(WINDOW *body)

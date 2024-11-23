@@ -10,6 +10,11 @@
 #include <ncurses.h> //!< Inclusion de la bibliothèque ncurses (commune à toutes les interfaces graphiques)
 #include <pthread.h> //!< Inclusion de la bibliothèque pthread (commune à toutes les interfaces graphiques)
 
+// Todo: Version threadée de l'interface graphique
+// Un thread qui gére l'interface graphique et un autre qui gère la logique de l'application
+// l'interface graphique envoie des signaux/events à l'autre thread pour effectuer des actions
+// Cela permet de ne pas bloquer l'interface ou l'application lors de leur traitement respectif
+
 
 // Constantes pour la fenêtre de l'application
 #define APP_COLS 106 /*!< Nombre de colonnes de la fenêtre de l'application */

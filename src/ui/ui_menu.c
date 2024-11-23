@@ -6,7 +6,8 @@
  * @see ui_menu.h
  */
 
-#include "ui_menu.h"
+#include "ui/ui_menu.h"
+
 
 /**********************************************************************************************************************/
 /*                                           Private functions                                                        */
@@ -65,7 +66,6 @@ void add_char(char *str, int index, char c);
  * \return const char* La chaîne de caractères correspondant à la touche
  */
 const char *menu_key2str(int key) {
-    const char str[2];
     switch(key) {
         case MENU_KEY_UP:
             return " ^ ";
@@ -238,111 +238,6 @@ app_choices_t create_enumerable_body(ui_menu_t *menu, app_choices_t *choices, in
     }
 }
 
-
-/**
- * \fn void create_input_field(int win, int y, int x, const char *label, char *value, int length, int isPassword)
- * \brief Création d'un champ de saisie
- * \details Cette fonction crée un champ de saisie en affichant un label et la valeur saisie
- * \param win La fenêtre du champ de saisie
- * \param params Les paramètres du champ de saisie
- * \return WINDOW* La fenêtre du champ de saisie
- * \note Si le pointeur win est NULL, la fonction crée une nouvelle fenêtre et l'assigne à win
- * \warning La fenêtre doit être détruite après utilisation
- */
-WINDOW *create_input_field(WINDOW **win, WINDOW *parent, menu_form_input_params_t *params) {
-    int fieldWidth = params->maxLength + 2*2;  // todo : remplacer 2 par MENU_FORM_INPUT_PADDING (ou autre)
-    int cursorPos = strlen(params->value) + 2; // position du curseur
-    int lenValue = strlen(params->value);
-
-    // Création de la fenêtre
-    if(*win == NULL) {
-        *win = derwin(parent, 3, fieldWidth, params->y, params->x);
-        init_window(*win);
-    }
-    box(*win, 0, 0);
-
-    // affichage de la valeur du champ
-    if(params->type == MENU_FORM_INPUT_PASSWORD) {
-        for(int i = 0; i < lenValue; i++) {
-            mvwprintw(*win, 1, 2 + i, "*");
-        }
-    }
-    else mvwprintw(*win, 1, 2, "%s", params->value);
-
-    // affichage du label du champ dans la bordure supérieure
-    mvwprintw(*win, 0, 2, "%s", params->label);
-    wmove(*win, 1, cursorPos);
-    while(params->isFocused == 1) {
-        curs_set(1);
-        wrefresh(*win);
-        int keypressed = wgetch(*win);
-        if(keypressed == params->stopFocusKey) {
-            params->isFocused = 0;
-            break;
-        }
-
-        switch(keypressed) {
-            case KEY_LEFT:
-                if(cursorPos > 2) cursorPos--;
-            break;
-
-            case KEY_RIGHT:
-                if(cursorPos < lenValue + 2) cursorPos++;
-            break;
-
-            case KEY_BACKSPACE:
-                // suppression du caractère précédent si possible (chaine et affichage)
-                if(lenValue > 0 && cursorPos > 2) {
-                    cursorPos--;
-                    remove_char(params->value, cursorPos - 2);
-                    lenValue--;
-                }
-            break;
-
-            case KEY_DC:
-                // suppression du caractère sous le curseur (chaine et affichage)
-                if(lenValue > 0 && cursorPos < fieldWidth - 1) {
-                    remove_char(params->value, cursorPos - 2);
-                    lenValue--;
-                    if(cursorPos == lenValue + 2) {
-                        cursorPos--;
-                    }
-                }
-            break;
-
-            case MENU_KEY_ENTER:
-                params->isFocused = 0;
-            break;
-
-            default:
-                // ajout du caractère à la position du curseur si imprimable (chaine et affichage)
-                if(lenValue < params->maxLength && isprint(keypressed)) {
-                    add_char(params->value, cursorPos - 2, keypressed);
-                    lenValue++;
-                    cursorPos++;
-                }
-            break;
-        }
-        // réaffichage de la valeur du champ
-        mvwprintw(*win, 1, 2, "%*s", fieldWidth - 3, " ");
-        if(params->type == MENU_FORM_INPUT_PASSWORD) {
-            for(int i = 0; i < lenValue; i++) {
-                mvwprintw(*win, 1, 2 + i, "*");
-            }
-        }
-        else {
-            mvwprintw(*win, 1, 2, "%s", params->value);
-        }
-        wmove(*win, 1, cursorPos);
-
-    }
-    // désactivation du curseur
-    curs_set(0);
-    // désactivation du mode inverse si activé
-    return *win;
-}
-
-
 /**
  * \fn menu_credentials_t create_credentials_body(WINDOW *body)
  * \brief Création du corps d'un menu de connexion (identifiants)
@@ -352,47 +247,39 @@ WINDOW *create_input_field(WINDOW **win, WINDOW *parent, menu_form_input_params_
  */
 menu_credentials_t create_credentials_body(WINDOW *body) {
     int keyPressed = 0;
-    int lastFocus = 0; // 0 = username, 1 = password, 2 = submit
-    WINDOW *usernameField = NULL;
-    WINDOW *passwordField = NULL;
-    menu_credentials_t credentials;
-    credentials.username[0] = '\0';
-    credentials.password[0] = '\0';
+    menu_credentials_t credentials = {
+        .username[0] = '\0',
+        .password[0] = '\0'
+    };
+    form_input_win_t *usernameField = NULL;
+    form_input_win_t *passwordField = NULL;
+    
+    usernameField = create_input_field(body, MENU_MARGIN, MENU_MARGIN + 2);
+    set_input_label(usernameField, "Username");
+    set_input_color(usernameField, COLOR_PAIR_MENU);
+    set_input_focus_color(usernameField, COLOR_PAIR_MENU_PROMPT);
+    set_input_value(usernameField, (void *)credentials.username);
+    configure_text_input(usernameField, APP_USERNAME_MAX_LENGTH, 0);
 
-    menu_form_input_params_t usernameParams = {
-        .x = MENU_MARGIN,
-        .y = MENU_MARGIN + 2,
-        .type = MENU_FORM_INPUT_TEXT,
-        .isFocused = 0,
-        .label = "Username",
-        .value = credentials.username,
-        .maxLength = APP_USERNAME_MAX_LENGTH,
-        .stopFocusKey = '\t'
-    };
-    menu_form_input_params_t passwordParams = {
-        .x = MENU_MARGIN,
-        .y = MENU_MARGIN + 6,
-        .type = MENU_FORM_INPUT_PASSWORD,
-        .isFocused = 0,
-        .label = "Password",
-        .value = credentials.password,
-        .maxLength = APP_PASSWORD_MAX_LENGTH,
-        .stopFocusKey = '\t'
-    };
-    create_input_field(&usernameField, body, &usernameParams);
-    create_input_field(&passwordField, body, &passwordParams);
+    passwordField = create_input_field(body, MENU_MARGIN, MENU_MARGIN + 6);
+    set_input_label(passwordField, "Password");
+    set_input_color(passwordField, COLOR_PAIR_MENU);
+    set_input_focus_color(passwordField, COLOR_PAIR_MENU_PROMPT);
+    set_input_value(passwordField, (void *)credentials.password);
+    configure_text_input(passwordField, APP_PASSWORD_MAX_LENGTH, 1);
+
+    display_input_field(usernameField);
+    display_input_field(passwordField);
 
     while(1) {
         mvwprintw(body, 12, MENU_MARGIN, "[ENTER] Submit");
         wrefresh(body);
-        wrefresh(usernameField);
-        wrefresh(passwordField);
 
-        usernameParams.isFocused = 1;
-        create_input_field(&usernameField, body, &usernameParams);
+        focus_input_field(usernameField);
+        handle_input_field(usernameField, (int)'\t');
 
-        passwordParams.isFocused = 1;
-        create_input_field(&passwordField, body, &passwordParams);
+        focus_input_field(passwordField);
+        handle_input_field(passwordField, (int)'\t');
 
         wattron(body, A_REVERSE);
         mvwprintw(body, 12, MENU_MARGIN, "[ENTER] Submit");
@@ -401,15 +288,13 @@ menu_credentials_t create_credentials_body(WINDOW *body) {
         // Si on valide la saisie
         keyPressed = wgetch(body);
         if(keyPressed == MENU_KEY_ENTER) {
-            delwin(usernameField);
-            delwin(passwordField);
+            destroy_input_field(usernameField);
+            destroy_input_field(passwordField);
             return credentials;
         }
         // On reboucle sur le premier champ
-        usernameParams.isFocused = 1;
-        
+        focus_input_field(usernameField);   
     }
-
     return credentials;
 }
 
@@ -545,39 +430,4 @@ WINDOW *init_menu_body(const char *title, const char *text) {
     mvwprintw(body, MENU_MARGIN, MENU_MARGIN, "%s", text);
 
     return body;
-}
-
-/**
- * \fn remove_char(char *str, int index)
- * \brief Suppression d'un caractère dans une chaîne de caractères
- * \details Cette fonction supprime un caractère dans une chaîne de caractères à l'index spécifié
- */
-void remove_char(char *str, int index) {
-    size_t len = strlen(str);
-    // on décale tous les caractères d'un cran vers la gauche à partir de l'index
-    for(size_t i = index; i < len; i++) {
-        str[i] = str[i+1];
-    }
-    // on supprime le dernier caractère
-    str[len-1] = '\0';
-}
-
-/**
- * \fn add_char(char *str, int index, char c)
- * \brief Ajout d'un caractère dans une chaîne de caractères
- * \details Cette fonction ajoute un caractère dans une chaîne de caractères à l'index spécifié
- * \param str La chaîne de caractères
- * \param index L'index où ajouter le caractère
- * @warning La chaîne doit être suffisamment grande pour accueillir le caractère supplémentaire
- */
-void add_char(char *str, int index, char c) {
-    size_t len = strlen(str);
-    // on décale tous les caractères d'un cran vers la droite à partir de l'index
-    for(int i = len; i > index; i--) {
-        str[i] = str[i-1];
-    }
-    // on ajoute le caractère à l'index
-    str[index] = c;
-    // on ajoute le caractère de fin de chaîne
-    str[len+1] = '\0';
 }

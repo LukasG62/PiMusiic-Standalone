@@ -4,7 +4,7 @@
  * @version 1.0
  * @author Lukas Grando
  */
-#include "ui_sequencer.h"
+#include "ui/ui_sequencer.h"
 #include "sound.h"
 
 /**********************************************************************************************************************/
