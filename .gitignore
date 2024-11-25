@@ -44,6 +44,11 @@
 pimusiic
 pi2iserv
 
+# Build Directories
+bin/*
+obj/*
+lib/*
+
 # Doc files
 docs/
 
