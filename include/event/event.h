@@ -11,6 +11,11 @@
 
 typedef void (*fn_destroy_data_t)(void *data); /*!< Fonction pour détruire les données associées à un événement */
 
+// todo: Les events de l'application ne devraient pas être definis une lib générique d'events.
+// - Sortir les events de l'application dans un fichier séparé (ex: app_events.h)
+// - Changer le event_type_t dans les event pour un unsigned int
+// De plus ce changement pourrait permettre de définir dans un dossier les structures de données associées à chaque type d'event
+
 /**
  * @enum event_type_t
  * @brief Enumération des types d'événements
@@ -22,9 +27,12 @@ typedef enum {
 	UI_EVENT_NONE, /*!< Emis quand il n'y a pas d'event (sert à diviser les types d'events) */
 	UI_EVENT_REQUEST_SUBMITTED, /*!< Emis quand l'utilisateur soumet un formulaire */
 	UI_EVENT_VIEW_CHANGED, /*!< Emis quand l'utilisateur change de vue */
+	UI_EVENT_VIEW_GO_BACK, /*!< Emis quand l'utilisateur veut revenir à la vue précédente */
 	UI_EVENT_MUSICPLAYBACK_STARTED, /*!< Emis quand la lecture de la musique commence */
 	UI_EVENT_MUSICPLAYBACK_STOPPED, /*!< Emis quand la lecture de la musique s'arrête */
-	UI_NOTE_DISPLAYED, /*!< Emis quand une note est affichée en mode lecture */
+	UI_EVENT_NOTE_PLAYED, /*!< Emis quand une note est jouée dans le séquenceur */
+	UI_EVENT_KEY_PRESSED, /*!< Emis quand une touche est pressée */
+	UI_EVENT_TICK, /*!< Emis à chaque tick de la boucle d'événements pour les animations */
 
 	// Evenment provenant de la logique (LOGIC)
 	LOGIC_EVENT_NONE, /*!< Emis quand il n'y a pas d'event (sert à diviser les types d'events) */

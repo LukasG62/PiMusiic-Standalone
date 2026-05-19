@@ -41,7 +41,6 @@ typedef struct {
 /**
  * @fn event_queue_t *create_event_queue(int size)
  * @brief Crée une file d'événements
- * @param size La taille de la file
  * @return event_queue_t* La file d'événements créée
  */
 event_queue_t *create_event_queue();

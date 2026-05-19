@@ -5,6 +5,7 @@
  */
 
 #include "event/event_queue.h"
+#include <errno.h>
 
 
 /**
@@ -41,7 +42,6 @@ void destroy_event_queue(event_queue_t *queue) {
 	// Destruction des sémaphores
 	sem_destroy(&queue->semEmpty);
 	sem_destroy(&queue->semMutex);
-	// Destruction de la file
 	free(queue);
 }
 
@@ -60,7 +60,7 @@ void notify_event(event_queue_t *queue, event_t *event) {
 	node->next = NULL;
 
 	// Ecriture dans la file
-	sem_wait(&queue->semMutex); // on attend que la file soit libre
+	sem_wait(&queue->semMutex);
 	if(queue->head == NULL) {
 		queue->head = node;
 		queue->tail = node;
@@ -81,7 +81,12 @@ void notify_event(event_queue_t *queue, event_t *event) {
  * @note Cette fonction attend un événement de la file
  */
 event_t *wait_event(event_queue_t *queue) {
-	sem_wait(&queue->semEmpty); // on attend qu'il y ait un événement
+	while(sem_wait(&queue->semEmpty) == -1) {
+		if(errno != EINTR) {
+			perror("SEM_WAIT");
+			exit(EXIT_FAILURE);
+		}
+	}
 	sem_wait(&queue->semMutex); // on protège la file pour la lecture
 	event_node_t *node = queue->head;
 	event_t *event = node->event;
@@ -90,8 +95,9 @@ event_t *wait_event(event_queue_t *queue) {
 	if(queue->size == 0) {
 		queue->tail = NULL;
 	}
+	sem_post(&queue->semMutex);
+
 	free(node);
-	sem_post(&queue->semMutex); // on libère la file
 	return event;
 }
 
@@ -114,7 +120,8 @@ event_t *trywait_event(event_queue_t *queue) {
 	if(queue->size == 0) {
 		queue->tail = NULL;
 	}
+	sem_post(&queue->semMutex);
+	
 	free(node);
-	sem_post(&queue->semMutex); // on libère la file
 	return event;
 }

@@ -5,10 +5,10 @@
  * @author Lukas Grando
  */
 
-#include "mpp.h"
-#include "data.h"
-#include "session.h"
-#include "mysyscall.h"
+#include "inet/mpp.h"
+#include "inet/data.h"
+#include "inet/session.h"
+#include "inet/mysyscall.h"
 
 socket_t *se = NULL; /*!< Socket d'écoute */
 sem_t *accessDB; /*!< Sémaphore pour l'accès à la base de données */
