@@ -48,9 +48,7 @@ pi2iserv
 bin/*
 obj/*
 lib/*
-
-# Doc files
-docs/
+build/*
 
 # Debug files
 *.dSYM/

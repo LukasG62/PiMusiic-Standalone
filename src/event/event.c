@@ -53,7 +53,7 @@ const char *event_type2str(event_type_t type) {
 		case UI_EVENT_VIEW_CHANGED: return "UI_VIEW_CHANGED";
 		case UI_EVENT_MUSICPLAYBACK_STARTED: return "UI_MUSICPLAYBACK_STARTED";
 		case UI_EVENT_MUSICPLAYBACK_STOPPED: return "UI_MUSICPLAYBACK_STOPPED";
-		case UI_NOTE_DISPLAYED: return "UI_NOTE_DISPLAYED";
+		case UI_EVENT_NOTE_PLAYED: return "UI_EVENT_NOTE_PLAYED";
 
 		// Events provenant de la logique (LOGIC)
 		case LOGIC_EVENT_NONE: return "LOGIC_NONE";
