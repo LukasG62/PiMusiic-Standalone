@@ -9,6 +9,10 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+// todo: arrêter de foutre toutes les librairies dans ce fichier, 
+// - c'est pas propre. Ca rend tout dépendant de ce fichier.
+// - Cependant les CHECK_ALLOC et CHECK_SYS_CALL sont pratiques, à voir comment les isoler dans un fichier à part sans devoir inclure toutes les librairies nécessaires dans ce fichier (ex: errno.h pour CHECK_SYS_CALL)
+
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
