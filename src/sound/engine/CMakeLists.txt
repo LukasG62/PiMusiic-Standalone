@@ -1,0 +1,3 @@
+file(GLOB SOUND_ENGINE_SOURCES "*.c")
+
+target_sources(sound PRIVATE ${SOUND_ENGINE_SOURCES})
