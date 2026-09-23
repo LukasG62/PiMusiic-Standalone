@@ -9,6 +9,7 @@
 #define OSC_RESAMPLER_H
 
 #include "sound/osc/osc.h"
+#include "sound/io/io_pmsd.h"
 
 // todo: serait intéressant de pouvoir configurer quel type de données le sample utilise (8, 16, 24, 32 bits) et d'adapter la lecture et la normalisation en conséquence
 
@@ -32,5 +33,12 @@ typedef struct {
  * @warning L'oscillateur doit être détruit avec sa méthode destroy pour libérer la mémoire
  */
 osc_t *osc_resampler_create(osc_resampler_config_t *config);
+
+/**
+ * @brief Remplit la configuration de l'oscillateur à partir d'un fichier pmsd chargé
+ * @param cfg Pointeur vers la configuration à remplir
+ * @param pmsd Pointeur vers l'objet PMSD déjà chargé en mémoire
+ */
+void osc_resampler_config_from_pmsd(osc_resampler_config_t *cfg, const io_pmsd_t *pmsd);
 
 #endif // OSC_RESAMPLER_H

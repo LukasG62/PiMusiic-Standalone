@@ -120,3 +120,20 @@ osc_t *osc_resampler_create(osc_resampler_config_t *config) {
     
     return osc;
 }
+
+/**
+ * @brief Remplit la configuration de l'oscillateur à partir d'un fichier pmsd chargé
+ * @param cfg Pointeur vers la configuration à remplir
+ * @param pmsd Pointeur vers l'objet PMSD déjà chargé en mémoire
+ */
+void osc_resampler_config_from_pmsd(osc_resampler_config_t *cfg, const io_pmsd_t *pmsd) {
+    if (!cfg || !pmsd) return;
+    if (pmsd->header.methodType != PMSD_METHOD_RESAMPLER) return;
+
+    cfg->sampleData = pmsd->audioData;
+    cfg->sampleLength = pmsd->header.sampleCount;
+    cfg->baseFrequency = pmsd->meta.resampler.baseFreq;
+    cfg->loopEnabled = (pmsd->meta.resampler.loopEnabled != 0);
+    cfg->loopStart = pmsd->meta.resampler.loopStart;
+    cfg->loopEnd = pmsd->meta.resampler.loopEnd;
+}

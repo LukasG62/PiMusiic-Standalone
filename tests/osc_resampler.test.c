@@ -132,6 +132,56 @@ void test_osc_resampler_looping(void) {
     osc->destroy(osc);
 }
 
+/**
+ * @brief Teste la conversion d'un fichier PMSD valide vers une config d'oscillateur
+ */
+void test_osc_resampler_config_from_pmsd_valid(void) {
+    io_pmsd_t pmsd;
+    memset(&pmsd, 0, sizeof(io_pmsd_t));
+    
+    pmsd.header.methodType = PMSD_METHOD_RESAMPLER;
+    pmsd.header.sampleCount = 256;
+    pmsd.meta.resampler.baseFreq = 440.0f;
+    pmsd.meta.resampler.loopEnabled = 1;
+    pmsd.meta.resampler.loopStart = 10;
+    pmsd.meta.resampler.loopEnd = 200;
+    pmsd.audioData = dummy_sample_data; // Pointeur factice
+
+    osc_resampler_config_t cfg;
+    memset(&cfg, 0, sizeof(osc_resampler_config_t));
+
+    osc_resampler_config_from_pmsd(&cfg, &pmsd);
+
+    TEST_ASSERT_EQUAL_PTR(dummy_sample_data, cfg.sampleData);
+    TEST_ASSERT_EQUAL_size_t(256, cfg.sampleLength);
+    TEST_ASSERT_EQUAL_DOUBLE(440.0, cfg.baseFrequency);
+    TEST_ASSERT_TRUE(cfg.loopEnabled);
+    TEST_ASSERT_EQUAL_size_t(10, cfg.loopStart);
+    TEST_ASSERT_EQUAL_size_t(200, cfg.loopEnd);
+}
+
+/**
+ * @brief Vérifie le rejet sécurisé des pointeurs NULL et des mauvais types de PMSD
+ */
+void test_osc_resampler_config_from_pmsd_invalid(void) {
+    osc_resampler_config_t cfg;
+    memset(&cfg, 0, sizeof(osc_resampler_config_t));
+
+    osc_resampler_config_from_pmsd(NULL, NULL);
+    osc_resampler_config_from_pmsd(&cfg, NULL);
+
+    io_pmsd_t pmsd_vocoder;
+    memset(&pmsd_vocoder, 0, sizeof(io_pmsd_t));
+    pmsd_vocoder.header.methodType = PMSD_METHOD_PHASE_VOCODER;
+    pmsd_vocoder.audioData = dummy_sample_data;
+
+    osc_resampler_config_from_pmsd(&cfg, &pmsd_vocoder);
+
+    TEST_ASSERT_NULL(cfg.sampleData);
+    TEST_ASSERT_EQUAL_size_t(0, cfg.sampleLength);
+    TEST_ASSERT_EQUAL_DOUBLE(0.0, cfg.baseFrequency);
+}
+
 int main(void) {
     UNITY_BEGIN();
     
@@ -140,6 +190,8 @@ int main(void) {
     RUN_TEST(test_osc_resampler_interpolation_half_speed);
     RUN_TEST(test_osc_resampler_end_of_sample);
     RUN_TEST(test_osc_resampler_looping);
+    RUN_TEST(test_osc_resampler_config_from_pmsd_valid);
+    RUN_TEST(test_osc_resampler_config_from_pmsd_invalid);
 
     return UNITY_END();
 }
