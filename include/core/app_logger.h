@@ -8,6 +8,7 @@
 #define LOG_MOD_LOGIC  "LOGIC"
 #define LOG_MOD_UI     "UI"
 #define LOG_MOD_INET   "INET"
+#define LOG_MOD_MAIN    "MAIN"
 
 // Structure qui sera passée en tant que "void *data" au logger générique
 typedef struct {

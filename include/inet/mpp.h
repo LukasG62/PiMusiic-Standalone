@@ -8,11 +8,12 @@
 #ifndef MPP_H
 #define MPP_H
 
+#include "common.h"
+#include "music/music.h"
+#include "inet/data.h"
+
 #include <sys/stat.h>
 #include <sys/types.h>
-
-#include "music/note.h"
-#include "inet/data.h"
 
 #define USERNAME_SIZE 15 /*!< Taille du nom d'utilisateur */
 #define REALLLOC_SIZE 10 /*!< Taille de réallouement de la liste d'identifiants de musiques */
