@@ -17,17 +17,15 @@ static bool ui_seq_channel_handle_event(ui_component_t *self, event_t *event) {
     if (!self || !self->data) return false;
     seq_channel_data_t *data = (seq_channel_data_t *)self->data;
     
-    int ch = data->channelId;
+    ui_seq_nav_ch_t ch = data->channelId;
     ui_seq_nav_t *nav = data->nav;
     music_t *music = data->music;
     int currentMode = *(data->mode);
 
     if(event->type == UI_EVENT_NOTE_PLAYED) {
-		// todo : faire un struct pour les données de l'event
-        int playedChannel = ((int*)event->data)[0];
-        int played_line = ((int*)event->data)[1];
-        if (playedChannel == ch) {
-            nav->lines[ch] = played_line;
+        event_note_played_data_t *payload = (event_note_played_data_t *)event->data;
+        if ((ui_seq_nav_ch_t) payload->channelId == ch) {
+            nav->lines[ch] = payload->lineIndex;
             nav->playMode = 1;
             return true;
         }
@@ -36,7 +34,7 @@ static bool ui_seq_channel_handle_event(ui_component_t *self, event_t *event) {
 
     if (event->type == UI_EVENT_KEY_PRESSED) {
         int key = (int)(intptr_t)event->data;
-        if ((int) nav->ch != ch) return false;
+        if (nav->ch != ch) return false;
         if (currentMode == NAVIGATION_MODE) {
             switch (key) {
                 case KEY_SEQ_NAV_UP: ui_seq_nav_up(nav, ch); return true;
@@ -46,21 +44,20 @@ static bool ui_seq_channel_handle_event(ui_component_t *self, event_t *event) {
             }
         } 
         else if (currentMode == EDIT_MODE) {
-			scale_t scale = init_scale();
-            note_t *current_note = &(music->channels[ch].notes[nav->lines[ch]]);
+            music_step_t *current_step = &(music->channels[ch].steps[nav->lines[ch]]);
             switch (key) {
                 case KEY_SEQ_NAV_UP:
                     if(nav->col == SEQUENCER_NAV_COL_LINE) {
                         ui_seq_nav_up(nav, ch);
                     } else {
-                        ui_seq_change_sequencer_note(current_note, nav->col, scale, 1);
+                        ui_seq_change_sequencer_step(current_step, nav->col, 1);
                     }
                     return true;
                 case KEY_SEQ_NAV_DOWN:
                     if(nav->col == SEQUENCER_NAV_COL_LINE) {
                         ui_seq_nav_down(nav, ch);
                     } else {
-                        ui_seq_change_sequencer_note(current_note, nav->col, scale, 0);
+                        ui_seq_change_sequencer_step(current_step, nav->col, 0);
                     }
                     return true;
                 case KEY_SEQ_NAV_LEFT: ui_seq_nav_left(nav); return true;
@@ -89,56 +86,98 @@ static void ui_seq_channel_draw(ui_component_t *self) {
     werase(win);
     box(win, 0, 0);
 
-    mvwprintw(win, 0, 1, "CHANNEL %d", ch + 1);
-    mvwprintw(win, 1, 1, "LINE|NOTE|OCTA|INST|SHFT");
+    mvwaddch(win, 0, 1, ACS_HLINE);
+    mvwprintw(win, 0, 2, "CHANNEL %d", ch + 1);
+    mvwprintw(win, 1, 1, "LINE STEP INST SHFT");
+    mvwaddch(win, 1, 5, ACS_VLINE);
+    mvwaddch(win, 1, 10, ACS_VLINE);
+    mvwaddch(win, 1, 15, ACS_VLINE);
 
     for (int i = 0; i < SEQUENCER_CH_LINES - 3; i++) {
         int currentLine = nav->start[ch] + i;
         int isSelected = ((int) nav->ch == ch && nav->lines[ch] == currentLine) ? 1 : 0;
         int playModeSelected = (nav->playMode && nav->lines[ch] == currentLine) ? 1 : 0;
 
-        if (currentLine >= CHANNEL_MAX_NOTES) {
+        if (currentLine >= MUSIC_CHANNEL_MAX_STEPS) {
             wattron(win, COLOR_PAIR(COLOR_PAIR_SEQ) | REVERSE_IF_COL(nav->col, SEQUENCER_NAV_COL_LINE, isSelected));
-            mvwprintw(win, 2 + i, 1, "----");
+            mvwprintw(win, 2 + i, 1, "....");
             wattroff(win, COLOR_PAIR(COLOR_PAIR_SEQ) | REVERSE_IF_COL(nav->col, SEQUENCER_NAV_COL_LINE, isSelected));
             
             wattron(win, COLOR_PAIR(COLOR_PAIR_SEQ));
-            mvwprintw(win, 2+i, 5, "|"); mvwprintw(win, 2+i, 10, "|");
-            mvwprintw(win, 2+i, 15, "|"); mvwprintw(win, 2+i, 20, "|");
+            mvwaddch(win, 2+i, 5, ACS_VLINE); mvwaddch(win, 2+i, 10, ACS_VLINE);
+            mvwaddch(win, 2+i, 15, ACS_VLINE); 
             wattroff(win, COLOR_PAIR(COLOR_PAIR_SEQ));
             continue;
         }
 
-        note_t note = music->channels[ch].notes[currentLine];
-        char instrumentName[5];
-        char noteName[3];
+        music_step_t step = music->channels[ch].steps[currentLine];
+        char stepName[5] = "....";
+        char instName[5] = "....";
+        char shiftName[5] = " .. ";
         
-        note2str(note, noteName); 
-        instrument2str(note.instrument, instrumentName);
+        if (step.duration != MUSIC_TIME_ZERO) {
+            snprintf(shiftName, 5, " %02d ", step.duration);
+        }
+
+        switch (step.type) {
+            case MUSIC_STEP_TYPE_REST:
+                strcpy(stepName, "----");
+                break;
+                
+            case MUSIC_STEP_TYPE_NOTE:
+                {
+                    char rawNote[4];
+                    note_to_string(step.data.note.noteId, step.data.note.octave, rawNote);
+                    snprintf(stepName, 5, "%-4s", rawNote);
+                    snprintf(instName, 5, " %02d ", step.data.note.instrumentId); 
+                }
+                break;
+                
+            case MUSIC_STEP_TYPE_COMMAND:
+                switch(step.data.cmd.type) {
+                    case MUSIC_CMD_SET_BPM:
+                        strcpy(stepName, "BPM ");
+                        snprintf(instName, 5, "%3d ", step.data.cmd.param.bpm.bpm);
+                        break;
+                    case MUSIC_CMD_RESET_BPM:
+                        strcpy(stepName, "RBPM");
+                        break;
+                    case MUSIC_CMD_SET_VOLUME:
+                        strcpy(stepName, "VOL ");
+                        snprintf(instName, 5, " %02d ", step.data.cmd.param.volume.volumePercent);
+                        break;
+                    case MUSIC_CMD_LOOP_START:
+                        strcpy(stepName, "LOOP");
+                        snprintf(instName, 5, " %02d ", step.data.cmd.param.loopStart.id);
+                        break;
+                    case MUSIC_CMD_LOOP_END:
+                        strcpy(stepName, "LEND");
+                        snprintf(instName, 5, " %02d ", step.data.cmd.param.loopEnd.id);
+                        break;
+                }
+                break;
+        }
 
         wattron(win, COLOR_PAIR(COLOR_PAIR_SEQ) | REVERSE_IF_COL(nav->col, SEQUENCER_NAV_COL_LINE, isSelected) | REVERSE_IF_COL(nav->col, SEQUENCER_NAV_COL_LINE, playModeSelected));
         mvwprintw(win, 2 + i, 1, "%04X", currentLine);
         wattroff(win, COLOR_PAIR(COLOR_PAIR_SEQ) | REVERSE_IFNOT_PLAYMODE(nav->playMode, playModeSelected));
 
         wattron(win, COLOR_PAIR(COLOR_PAIR_SEQ));
-        mvwprintw(win, 2+i, 5, "|"); mvwprintw(win, 2+i, 10, "|");
-        mvwprintw(win, 2+i, 15, "|"); mvwprintw(win, 2+i, 20, "|");
+        mvwaddch(win, 2+i, 5, ACS_VLINE);
+        mvwaddch(win, 2+i, 10, ACS_VLINE);
+        mvwaddch(win, 2+i, 15, ACS_VLINE);
         wattroff(win, COLOR_PAIR(COLOR_PAIR_SEQ));
 
-        wattron(win, COLOR_PAIR(COLOR_PAIR_SEQ_NOTE) | REVERSE_IF_COL(nav->col, SEQUENCER_NAV_COL_NOTE, isSelected));
-        mvwprintw(win, 2 + i, 6, " %-2s ", noteName);
-        wattroff(win, COLOR_PAIR(COLOR_PAIR_SEQ_NOTE) | REVERSE_IFNOT_PLAYMODE(nav->playMode, playModeSelected));
-
-        wattron(win, COLOR_PAIR(COLOR_PAIR_SEQ_OCTAVE) | REVERSE_IF_COL(nav->col, SEQUENCER_NAV_COL_OCTAVE, isSelected));
-        mvwprintw(win, 2 + i, 11, " %02d ", note.octave);
-        wattroff(win, COLOR_PAIR(COLOR_PAIR_SEQ_OCTAVE) | REVERSE_IFNOT_PLAYMODE(nav->playMode, playModeSelected));
+        wattron(win, COLOR_PAIR(COLOR_PAIR_SEQ_STEP) | REVERSE_IF_COL(nav->col, SEQUENCER_NAV_COL_STEP, isSelected));
+        mvwprintw(win, 2 + i, 6, "%-4s", stepName);
+        wattroff(win, COLOR_PAIR(COLOR_PAIR_SEQ_STEP) | REVERSE_IFNOT_PLAYMODE(nav->playMode, playModeSelected));
 
         wattron(win, COLOR_PAIR(COLOR_PAIR_SEQ_INSTRUMENT) | REVERSE_IF_COL(nav->col, SEQUENCER_NAV_COL_INSTRUMENT, isSelected));
-        mvwprintw(win, 2 + i, 16, "%s", instrumentName);
+        mvwprintw(win, 2 + i, 11, "%-4s", instName);
         wattroff(win, COLOR_PAIR(COLOR_PAIR_SEQ_INSTRUMENT) | REVERSE_IFNOT_PLAYMODE(nav->playMode, playModeSelected));
 
         wattron(win, COLOR_PAIR(COLOR_PAIR_SEQ_SHIFT) | REVERSE_IF_COL(nav->col, SEQUENCER_NAV_COL_TIME, isSelected));
-        mvwprintw(win, 2 + i, 21, " %02d ", note.time);
+        mvwprintw(win, 2 + i, 16, "%-4s", shiftName);
         wattroff(win, COLOR_PAIR(COLOR_PAIR_SEQ_SHIFT) | A_REVERSE); // Force l'arrêt du reverse final
     }
 

@@ -9,14 +9,14 @@
 
 #include "ui/base/ui_common.h"
 #include "ui/base/ui_component.h"
-#include "music/note.h"
+#include "music/music.h"
  
 #define SEQUENCER_INFO_LINES 6 /*!< Nombre de lignes pour la zone d'information du séquenceur */
 #define SEQUENCER_INFO_COLS 53 /*!< Nombre de colonnes pour la zone d'information du séquenceur */
 #define SEQUENCER_HELP_LINES 6 /*!< Nombre de lignes pour la zone d'aide du séquenceur */
 #define SEQUENCER_HELP_COLS 53 /*!< Nombre de colonnes pour la zone d'aide du séquenceur */
 #define SEQUENCER_CH_LINES 22  /*!< Nombre de lignes pour les channels du séquenceur */
-#define SEQUENCER_CH_COLS 26  /*!< Nombre de colonnes pour les channels du séquenceur */
+#define SEQUENCER_CH_COLS 21  /*!< Nombre de colonnes pour les channels du séquenceur */
 
 #define KEY_SEQ_NAV_UP KEY_UP /*!< Touche pour monter dans le séquenceur */
 #define KEY_SEQ_NAV_DOWN KEY_DOWN /*!< Touche pour descendre dans le séquenceur */
@@ -25,6 +25,7 @@
 #define KEY_SEQ_NAV_CH1 '1' /*!< Touche pour aller au channel 1 */
 #define KEY_SEQ_NAV_CH2 '2' /*!< Touche pour aller au channel 2 */
 #define KEY_SEQ_NAV_CH3 '3' /*!< Touche pour aller au channel 3 */
+#define KEY_SEQ_SWITCH_MODE '\t' /*!< Touche pour changer de mode (navigation/édition) */
 #define KEY_SEQ_PLAY ' ' /*!< Touche pour jouer la musique */
 #define KEY_SEQ_SAVE 's' /*!< Touche pour sauvegarder la musique */
 #define KEY_SEQ_HELP 'h' /*!< Touche pour afficher l'aide */
@@ -42,8 +43,7 @@
  */
 typedef enum {
     SEQUENCER_NAV_COL_LINE = 0, /*!< Colonne de l'identifiant de la ligne */
-    SEQUENCER_NAV_COL_NOTE, /*!< Colonne de la note */
-    SEQUENCER_NAV_COL_OCTAVE, /*!< Colonne de l'octave */
+    SEQUENCER_NAV_COL_STEP, /*!< Colonne de la note */
     SEQUENCER_NAV_COL_INSTRUMENT, /*!< Colonne de l'instrument */
     SEQUENCER_NAV_COL_TIME, /*!< Colonne du temps de la note */
     SEQUENCER_NAV_COL_MAX, /*!< Nombre de colonnes de navigation */
@@ -69,8 +69,7 @@ typedef enum {
     COLOR_PAIR_SEQ_NOTSAVED, /*!< Couleur pour indiquer que la musique n'est pas sauvegardée */
     COLOR_PAIR_SEQ_SAVED, /*!< Couleur pour indiquer que la musique est sauvegardée */
     COLOR_PAIR_SEQ_PLAYED, /*!< Couleur pour indiquer la ligne jouée */
-    COLOR_PAIR_SEQ_OCTAVE, /*!< Couleur pour la colonne d'octave */
-    COLOR_PAIR_SEQ_NOTE, /*!< Couleur pour la colonne de note */
+    COLOR_PAIR_SEQ_STEP, /*!< Couleur pour la colonne de note */
     COLOR_PAIR_SEQ_INSTRUMENT, /*!< Couleur pour la colonne d'instrument */
     COLOR_PAIR_SEQ_SHIFT, /*!< Couleur pour la colonne de temps */
     COLOR_PAIR_SEQ_HEADER_INFO, /*!< Couleur pour l'entête d'information */
@@ -136,14 +135,13 @@ void ui_seq_nav_left(ui_seq_nav_t *nav);
 void ui_seq_nav_right(ui_seq_nav_t *nav);
 
 /**
- * @fn ui_seq_change_sequencer_note(note_t *note, short col, scale_t scale, int isUp)
- * @brief Modification d'une note du séquenceur
- * @param note La note à modifier
- * @param col La colonne actuel
- * @param scale La gamme des notes
- * @param isUp La direction de la modification (0 pour le bas, 1 pour
+ * @fn ui_seq_change_sequencer_step(music_step_t *step, short col, int isUp)
+ * @brief Modification "in-place" d'un step dans l'interface Ncurses
+ * @param step Le pointeur vers le step courant
+ * @param col La colonne active
+ * @param isUp La direction de la modification
  */
-void ui_seq_change_sequencer_note(note_t *note, short col, scale_t scale, int isUp);
+void ui_seq_change_sequencer_step(music_step_t *step, short col, int isUp);
 
 /**
  * @fn ui_seq_create_info_box(int x, int y, music_t *music, int *currentMode, bool *need2save)

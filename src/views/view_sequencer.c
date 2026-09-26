@@ -13,15 +13,15 @@
 #define UI_SEQ_BODY_X0 0
 #define UI_SEQ_BODY_Y0 6
 #define UI_SEQ_CH1_X0 7
-#define UI_SEQ_CH2_X0 37
-#define UI_SEQ_CH3_X0 67
+#define UI_SEQ_CH2_X0 31
+#define UI_SEQ_CH3_X0 55
 #define UI_SEQ_CH_Y0 7
 
 typedef struct {
     ui_seq_nav_t nav;
     music_t *music;
-    bool need2save; 
-    int currentMode; 
+    bool need2save;
+    int currentMode;
 } view_seq_state_t;
 
 static void view_sequencer_draw(ui_view_t *self) {
@@ -65,13 +65,19 @@ static bool view_sequencer_handle_event(ui_view_t *self, event_t *event) {
         }
 
         if (key == KEY_SEQ_PLAY) {
-			// todo: envoyer un event pour jouer la musique
+            event_t *ev = create_event(UI_EVENT_MUSICPLAYBACK_STARTED, NULL, NULL);
+            notify_event(GET_LOGIC_QUEUE(), ev);
             return true;
         }
 
         if (key == KEY_SEQ_SAVE) {
 			//todo: envoyer un event pour sauvegarder la musique sur le serv mpp
             state->need2save = false; 
+            return true;
+        }
+
+        if(key == KEY_SEQ_SWITCH_MODE) {
+            state->currentMode = (state->currentMode == NAVIGATION_MODE) ? EDIT_MODE : NAVIGATION_MODE;
             return true;
         }
 
@@ -84,7 +90,7 @@ static bool view_sequencer_handle_event(ui_view_t *self, event_t *event) {
 
     ui_component_t *focused = self->components[self->focusedComponent];
     if (focused && focused->handle_event) {
-        int old_ch = nav->ch;
+        ui_seq_nav_ch_t old_ch = nav->ch;
         bool consumed = focused->handle_event(focused, event);
 
         if (nav->ch != old_ch) {
@@ -120,6 +126,7 @@ ui_view_t *view_sequencer(app_context_t *ctx) {
     state->nav = init_default_nav();
     state->music = &(ctx->music);
     state->need2save = false;
+    state->nav.playMode = false;
     state->currentMode = NAVIGATION_MODE;
 
     ui_view_t *view = ui_view_create(view_sequencer_draw, view_sequencer_handle_event, view_sequencer_destroy, (void *) state);
@@ -147,5 +154,6 @@ ui_view_t *view_sequencer(app_context_t *ctx) {
         ui_view_add_component(view, channel);
     }
 
+    view->focusedComponent = 2 + state->nav.ch; // Focus sur le channel 1 par défaut
     return view;
 }

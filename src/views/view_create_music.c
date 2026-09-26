@@ -23,7 +23,7 @@ ui_view_t *view_create_music(music_t *music, ui_menu_credentials_t *creds, bool 
     ui_component_t *bpmField = ui_form_create_input_field(menu->body, MENU_MARGIN + MUSIC_NAME_MAX_LENGTH + 6, MENU_MARGIN + 2);
     ui_form_set_input_label(bpmField, "BPM");
     ui_form_set_input_color(bpmField, COLOR_PAIR_MENU, COLOR_PAIR_MENU_PROMPT);
-    ui_form_set_input_value(bpmField, &(music->bpm));
+    ui_form_set_input_value(bpmField, &(music->baseBpm));
     ui_form_configure_number_input(bpmField, 60, 240);
 
     ui_component_t *submitBtn = ui_form_create_button(menu->body, MENU_MARGIN, 12, "[ENTER] Submit");

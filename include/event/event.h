@@ -52,6 +52,11 @@ typedef enum {
 	INET_ERROR, /*!< Emis quand il y a une erreur avec le serveur */
 } event_type_t;
 
+typedef struct {
+    int channelId;
+    int lineIndex;
+} event_note_played_data_t;
+
 /**
  * @struct event_t
  * @brief structure d'un événement
