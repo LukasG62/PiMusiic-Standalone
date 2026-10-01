@@ -121,7 +121,7 @@ typedef struct
     int start[SEQUENCER_NAV_CH_MAX]; /*!< Position de départ [col] */
     int lines[SEQUENCER_NAV_CH_MAX]; /*!< Ligne [ch] */
     //int line;
-    int playMode; /*!< Mode de lecture */
+    bool playMode; /*!< Mode de lecture */
 } ui_seq_nav_t;
 
 /**

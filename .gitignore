@@ -49,6 +49,7 @@ bin/*
 obj/*
 lib/*
 build/*
+temp/*
 
 # Debug files
 *.dSYM/
@@ -64,3 +65,6 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+#python
+venv

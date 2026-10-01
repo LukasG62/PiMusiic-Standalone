@@ -168,28 +168,9 @@ void serialize_mpp_request(mpp_request_t *request, buffer_t buffer) {
  * @see serialize_mpp_request
  */
 void deserialize_mpp_request(buffer_t buffer, mpp_request_t *request) {
-    // strtok n'est pas thread safe, on utilise strtok_r donc pour cela on doit déclarer un pointeur saveptr
-    char *saveptr = NULL;
-    char *token = NULL;
-    char *bufferCp = malloc(strlen(buffer) + 1);
-    strcpy(bufferCp, buffer);
-    // lecture de la première ligne
-    token = strtok_r(buffer, "\n", &saveptr);
-    sscanf(token, "%d %s %ld", (int *) &request->code, request->rfidId, &request->musicId);
-
-    // lecture des musiques si elles existent
-    token = strtok_r(NULL, "\n", &saveptr);
-    if(token != NULL) {
-        // On trouve ou commence la musique dans la copie du buffer
-        char *tokenCp = strstr(bufferCp, token);
-        request->music = (music_t *)malloc(sizeof(music_t));
-        init_music(request->music, 0);
-        deserialize_music(tokenCp, request->music);
-    }
-    else {
-        request->music = NULL;
-    }
-    free(bufferCp);
+    UNUSED(buffer);
+    UNUSED(request);
+    UNIMPLEMENTED("deserialize_mpp_request");
 }
 
 /**
@@ -225,46 +206,9 @@ void serialize_mpp_response(mpp_response_t *response, buffer_t buffer) {
  * @param response La réponse MPP à remplir
  */
 void deserialize_mpp_response(buffer_t buffer, mpp_response_t *response) {
-    // strtok n'est pas thread safe, on utilise strtok_r donc pour cela on doit déclarer un pointeur saveptr
-    // TODO : robustesse !!
-    char *saveptr = NULL;
-    char *bufferCp = malloc(strlen(buffer) + 1);
-    int i;
-    strcpy(bufferCp, buffer);
-    // lecture de la première ligne
-    char *token = strtok_r(buffer, "\n", &saveptr);
-    sscanf(token, "%d %s", (int *) &response->code, response->username);
-
-    // Creation de la liste de musiques 
-    token = strtok_r(NULL, "\n", &saveptr);
-    if(token != NULL) {
-        response->musicIds = (musicId_list_t *)malloc(sizeof(musicId_list_t));
-        init_music_list(response->musicIds);
-        int size;
-        sscanf(token, "%d", &size);
-        for(i = 0; i < size; i++) {
-            token = strtok_r(NULL, "\n", &saveptr);
-            time_t musicId;
-            sscanf(token, "%ld", &musicId);
-            add_music_id(response->musicIds, musicId);
-        }
-        // On lit la musique
-        token = strtok_r(NULL, "\n", &saveptr);
-        if(token != NULL) {
-            // On trouve ou commence la musique dans la copie du buffer
-            char *tokenCp = strstr(bufferCp, token);
-            response->music = (music_t *)malloc(sizeof(music_t));
-            init_music(response->music, 0);
-            deserialize_music(tokenCp, response->music);
-        } 
-        else response->music = NULL;
-
-    } else {
-        // Si token est NULL, alors il n'y a pas de liste de musiques ni de musique
-        response->musicIds = NULL;
-        response->music = NULL;
-    }
-    free(bufferCp);
+    UNUSED(buffer);
+    UNUSED(response);
+    UNIMPLEMENTED("deserialize_mpp_response");
 }
 
 /**
@@ -715,18 +659,7 @@ void create_user_directories() {
  * @warning La musique doit être initialisée avant d'appeler cette fonction
  */
 void serialize_music(music_t *music, buffer_t buffer) {
-    int i, j;
-    sprintf(buffer, "%s%ld %d\n", buffer, music->date.tv_sec, music->bpm);
-    // On parcourt chaque channel et on écrit seulement les notes non vides
-    for(i = 0; i < MUSIC_MAX_CHANNELS; i++) {
-        channel_t *channel = &music->channels[i];
-        for(j = 0; j < channel->nbNotes; j++) {
-            note_t *note = &channel->notes[j];
-            sprintf(buffer, "%s%d %d %d %d %d\n", buffer, j, note->id, note->octave, note->instrument, note->time);
-        }
-        // On marque la fin du channel
-        sprintf(buffer, "%sP\n", buffer);
-    }
+    UNIMPLEMENTED("serialize_music");
 }
 
 /**
@@ -737,32 +670,9 @@ void serialize_music(music_t *music, buffer_t buffer) {
  * @warning La musique doit être initialisée avant d'appeler cette fonction
  */
 void deserialize_music(char *token, music_t *music) {
-    int channelCount = 0;
-    char *line = NULL;
-    char *saveptr = NULL;
-    scale_t scale = init_scale();
-    line = strtok_r(token, "\n", &saveptr);
-    sscanf(line, "%ld %hd", &music->date.tv_sec, &music->bpm);
-
-    while (line != NULL && channelCount < MUSIC_MAX_CHANNELS) {
-        line = strtok_r(NULL, "\n", &saveptr);
-        if (line != NULL) {
-            int channelId = channelCount;
-            channel_t *channel = &music->channels[channelId];
-            while (line != NULL && *line != 'P') {
-                int index = 0;
-                // on récupère d'abord la ligne
-                sscanf(line, "%d", &index);
-                // on récupère les notes
-                note_t *note = &channel->notes[index];
-                sscanf(line, "%d %hd %hd %d %d", &index, &note->id, &note->octave, (int *)&note->instrument, (int *)&note->time);
-                note->frequency = get_note_freq(note, &scale);
-                update_channel_nbNotes(channel, index);
-                line = strtok_r(NULL, "\n", &saveptr);
-            }
-            channelCount++;
-        }
-    }
+    UNUSED(token);
+    UNUSED(music);
+    UNIMPLEMENTED("deserialize_music");
 }
 
 /**
@@ -786,14 +696,7 @@ void write_list_music(musicId_list_t *list, FILE *file) {
  * @param file Le fichier depuis lequel lire la liste
  */
 void read_list_music(musicId_list_t *list, FILE *file) {
-    init_music_list(list);
-    int size;
-    time_t musicId = 0;
-    fread(&size, sizeof(int), 1, file);
-    if(size == 0) return;
-    while(fread(&musicId, sizeof(time_t), 1, file) == 1) {
-        add_music_id(list, musicId);
-    }
+    UNIMPLEMENTED("read_list_music");
 }
 
 /**

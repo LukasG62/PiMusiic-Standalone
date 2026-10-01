@@ -8,15 +8,17 @@
 #include "common.h"
 #include "ui/base/ui_menu.h"
 #include "inet/request.h"
-#include "music/sound.h"
 #include "inet/mysyscall.h"
 #include "event/event.h"
 #include "event/event_queue.h"
 #include "core/logger.h"
 
+#include "sound/engine/mixer.h"
+
 typedef struct {
 	ui_menu_credentials_t credentials; /*!< Les identifiants de connexion de l'utilisateur */
 	music_t music; /*!< La musique en cours de création ou de lecture */
+	mixer_t *mixer; /*!< Le mixeur global de l'application */
 	bool isConnected; /*!< L'état de connexion de l'utilisateur */
 } app_context_t;
 
@@ -25,6 +27,10 @@ extern event_queue_t *uiQueue; /*!< File d'événements pour la communication av
 extern event_queue_t *logicQueue; /*!< File d'événements pour la communication avec la logique métier */
 extern app_context_t *appContext; /*!< Contexte global de l'application */
 extern logger_t appLogger; /*!< Logger global de l'application */
+
+#define NS_PER_SEC 1000000000L
+#define NS_PER_MS 1000000L
+#define NS_PER_MINUTE 60000000000L
 
 #define GET_UI_QUEUE() (uiQueue)
 #define GET_LOGIC_QUEUE() (logicQueue)

@@ -12,6 +12,8 @@
 #include "ui/base/ui_common.h"
 #include "ui/base/ui_component.h"
 #include "ui/sequencer/ui_seq_components.h"
+#include "music/music.h"
+#include "music/step.h"
 #include "music/note.h"
 
 int main() {
@@ -23,42 +25,39 @@ int main() {
 
     if (has_colors()) {
         start_color();
-        init_pair(COLOR_PAIR_SEQ, COLOR_WHITE, COLOR_BLACK);
-        init_pair(COLOR_PAIR_SEQ_NOTE, COLOR_GREEN, COLOR_BLACK);
-        init_pair(COLOR_PAIR_SEQ_OCTAVE, COLOR_MAGENTA, COLOR_BLACK);
-        init_pair(COLOR_PAIR_SEQ_INSTRUMENT, COLOR_YELLOW, COLOR_BLACK);
-        init_pair(COLOR_PAIR_SEQ_SHIFT, COLOR_CYAN, COLOR_BLACK);
+        ui_seq_init_colors();
     }
 
     music_t mock_music;
-    memset(&mock_music, 0, sizeof(music_t));
-    mock_music.bpm = 120;
+    music_init(&mock_music, 120, "Sandbox Track");
 
     for (int i = 0; i < 16; i++) {
-        mock_music.channels[0].notes[i].id = i % 12;
-        mock_music.channels[0].notes[i].octave = 4;
-        mock_music.channels[0].notes[i].instrument = i % 4;
-        mock_music.channels[0].notes[i].time = 4;
+        music_step_t step_ch0;
+        
+        if (i == 4) {
+            step_ch0 = music_step_create_cmd_bpm(140, MUSIC_TIME_ZERO);
+        } else if (i == 8) {
+            step_ch0 = music_step_create_cmd_loop_start(0, MUSIC_TIME_ZERO);
+        } else if (i == 15) {
+            step_ch0 = music_step_create_cmd_loop_end(0, 4, MUSIC_TIME_ZERO);
+        } else {
+            step_ch0 = music_step_create_note(NOTE_C_ID + (i % 7), 4, 1, MUSIC_TIME_NOIRE);
+        }
+        music_write_step(&mock_music, 0, i, step_ch0);
 
-        mock_music.channels[1].notes[i].id = 255;
-        mock_music.channels[2].notes[i].id = 255;
+        if (i % 2 == 0) {
+            music_write_step(&mock_music, 1, i, music_step_create_note(NOTE_E_ID, 3, 2, MUSIC_TIME_CROCHE));
+        } else {
+            music_write_step(&mock_music, 1, i, music_step_create_rest(MUSIC_TIME_CROCHE));
+        }
     }
-
-    ui_seq_nav_t shared_nav;
-    shared_nav.ch = 0;
-    shared_nav.col = 0;
-    shared_nav.playMode = 0;
-    for (int i = 0; i < 3; i++) {
-        shared_nav.start[i] = 0;
-        shared_nav.lines[i] = 0;
-    }
-
+    ui_seq_nav_t shared_nav = ui_seq_init_nav(0);
     int current_mode = NAVIGATION_MODE;
 
     ui_component_t *channels[3];
     channels[0] = ui_seq_create_channel(2,  3, 0, &mock_music, &shared_nav, &current_mode);
-    channels[1] = ui_seq_create_channel(28, 3, 1, &mock_music, &shared_nav, &current_mode);
-    channels[2] = ui_seq_create_channel(54, 3, 2, &mock_music, &shared_nav, &current_mode);
+    channels[1] = ui_seq_create_channel(25, 3, 1, &mock_music, &shared_nav, &current_mode);
+    channels[2] = ui_seq_create_channel(48, 3, 2, &mock_music, &shared_nav, &current_mode);
 
     bool running = true;
     event_t ev;
@@ -68,11 +67,11 @@ int main() {
         erase();
         attron(A_BOLD);
         mvprintw(0, 2, "PIMUSIIC - SEQUENCER COMPONENT SANDBOX");
-        attroff(A_BOLD);
+        attroff(A_BOLD);      
         mvprintw(1, 2, "Mode: %s | Active Channel: %d | Active Col: %d", 
                  (current_mode == NAVIGATION_MODE) ? "NAVIGATION" : "EDITION", 
                  shared_nav.ch + 1, shared_nav.col);
-        mvprintw(20, 2, "[ESC] Quitter | [SPACE] Basculer Mode | [ARROWS] Naviguer / Éditer");
+        mvprintw(26, 2, "[ESC] Quitter | [SPACE] Basculer Mode | [ARROWS] Naviguer / Éditer");
         refresh();
 
         for (int i = 0; i < 3; i++) {

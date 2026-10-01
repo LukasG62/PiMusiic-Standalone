@@ -45,22 +45,22 @@ static void ui_seq_info_draw(ui_component_t *self) {
     wattroff(win, (need2save ? COLOR_PAIR(COLOR_PAIR_SEQ_NOTSAVED) : COLOR_PAIR(COLOR_PAIR_SEQ_SAVED)) | A_BOLD);
 
     wattron(win, A_BOLD);
-    mvwprintw(win, 2, 6, " %d", music->bpm);
+    mvwprintw(win, 2, 6, " %d", music->baseBpm);
     wattroff(win, A_BOLD);
 
     if(mode == NAVIGATION_MODE) {
-        wattron(win, COLOR_PAIR(COLOR_PAIR_SEQ_OCTAVE) | A_BOLD);
+        wattron(win, COLOR_PAIR(COLOR_PAIR_SEQ_INSTRUMENT) | A_BOLD);
         mvwprintw(win, 3, 8, "NAVIGATION");
-        wattroff(win, COLOR_PAIR(COLOR_PAIR_SEQ_OCTAVE));
+        wattroff(win, COLOR_PAIR(COLOR_PAIR_SEQ_INSTRUMENT));
         
         wattron(win, COLOR_PAIR(COLOR_PAIR_SEQ) | A_BOLD);
         mvwprintw(win, 4, 1, "[BTN1] CH1         [BTN2] CH2       [BTN3] CH3 ");
         wattroff(win, COLOR_PAIR(COLOR_PAIR_SEQ) | A_BOLD);
     }
     else {
-        wattron(win, COLOR_PAIR(COLOR_PAIR_SEQ_NOTE) | A_BOLD);
+        wattron(win, COLOR_PAIR(COLOR_PAIR_SEQ_STEP) | A_BOLD);
         mvwprintw(win, 3, 8, "EDITION");
-        wattroff(win, COLOR_PAIR(COLOR_PAIR_SEQ_NOTE));
+        wattroff(win, COLOR_PAIR(COLOR_PAIR_SEQ_STEP));
         
         wattron(win, COLOR_PAIR(COLOR_PAIR_SEQ) | A_BOLD);
         mvwprintw(win, 4, 1, "[BTN1] Save        [BTN2] Quit       [BTN3] Play ");
