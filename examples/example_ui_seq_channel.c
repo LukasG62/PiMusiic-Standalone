@@ -9,12 +9,13 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "ui/base/ui_common.h"
-#include "ui/base/ui_component.h"
-#include "ui/sequencer/ui_seq_components.h"
-#include "music/music.h"
-#include "music/step.h"
-#include "music/note.h"
+#include "shared/music/music.h"
+#include "shared/music/step.h"
+#include "shared/music/note.h"
+
+#include "pimusiic/ui/base/ui_common.h"
+#include "pimusiic/ui/base/ui_component.h"
+#include "pimusiic/ui/sequencer/ui_seq_components.h"
 
 int main() {
     initscr();

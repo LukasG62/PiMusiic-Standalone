@@ -5,10 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "sound/engine/instrument.h"
-#include "sound/engine/voice.h"
-#include "sound/engine/mixer.h"
-#include "sound/plot/gnuwave.h"
+#include "pimusiic/sound/engine/instrument.h"
+#include "pimusiic/sound/engine/voice.h"
+#include "pimusiic/sound/engine/mixer.h"
+#include "pimusiic/sound/plot/gnuwave.h"
 
 #define SAMPLE_RATE 48000.0
 #define FRAMES 480 

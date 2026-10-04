@@ -1,0 +1,6 @@
+add_subdirectory(env)
+add_subdirectory(engine)
+add_subdirectory(osc)
+add_subdirectory(fx)
+add_subdirectory(plot)
+add_subdirectory(io)
