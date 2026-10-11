@@ -40,10 +40,6 @@
 *.x86_64
 *.hex
 
-# Main executable
-pimusiic
-pi2iserv
-
 # Build Directories
 bin/*
 obj/*

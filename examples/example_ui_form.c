@@ -8,9 +8,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ui/base/ui_common.h"
-#include "ui/base/ui_component.h"
-#include "ui/form/ui_form_input.h"
+#include "pimusiic/ui/base/ui_common.h"
+#include "pimusiic/ui/base/ui_component.h"
+#include "pimusiic/ui/form/ui_form_input.h"
 
 char username[30] = "Lukas";
 char password[30];

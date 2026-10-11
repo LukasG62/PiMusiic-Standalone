@@ -1,0 +1,58 @@
+/**
+ * @file core.h
+ * @brief Fichier d'en-tête pour les services centraux de l'application
+ */
+#ifndef CORE_H
+#define CORE_H
+
+#include "common.h"
+#include "pimusiic/ui/base/ui_menu.h"
+#include "shared/inet/request.h"
+#include "shared/inet/mysyscall.h"
+#include "shared/event/event.h"
+#include "shared/event/event_queue.h"
+#include "shared/core/logger.h"
+#include "pimusiic/sound/engine/mixer.h"
+
+typedef struct {
+	ui_menu_credentials_t credentials; /*!< Les identifiants de connexion de l'utilisateur */
+	music_t music; /*!< La musique en cours de création ou de lecture */
+	mixer_t *mixer; /*!< Le mixeur global de l'application */
+	bool isConnected; /*!< L'état de connexion de l'utilisateur */
+} app_context_t;
+
+extern volatile bool isRunning; /*!< Indique si l'application est en cours d'exécution */
+extern event_queue_t *uiQueue; /*!< File d'événements pour la communication avec l'interface utilisateur */
+extern event_queue_t *logicQueue; /*!< File d'événements pour la communication avec la logique métier */
+extern app_context_t *appContext; /*!< Contexte global de l'application */
+extern logger_t appLogger; /*!< Logger global de l'application */
+
+#define NS_PER_SEC 1000000000L
+#define NS_PER_MS 1000000L
+#define NS_PER_MINUTE 60000000000L
+
+#define GET_UI_QUEUE() (uiQueue)
+#define GET_LOGIC_QUEUE() (logicQueue)
+#define GET_APP_CONTEXT() (appContext)
+
+#define UI_NOTIFY(event) notify_event(uiQueue, event)
+#define LOGIC_NOTIFY(event) notify_event(logicQueue, event)
+
+#define WAIT_UI_EVENT() wait_event(uiQueue)
+#define WAIT_LOGIC_EVENT() wait_event(logicQueue)
+
+#define TRYWAIT_UI_EVENT() trywait_event(uiQueue)
+#define TRYWAIT_LOGIC_EVENT() trywait_event(logicQueue)
+
+/**
+ * \brief Initialise le cœur de l'application avec ses services
+ * \param uiQueue La file d'événements pour la communication avec l'interface utilisateur
+ * \param logicQueue La file d'événements pour la communication avec la logique métier
+ * \param appContext Le contexte global de l'application à initialiser
+ */
+void core_init(event_queue_t *uiQueue, event_queue_t *logicQueue, logger_t *logger, app_context_t *appContext);
+
+
+
+
+#endif // CORE_H

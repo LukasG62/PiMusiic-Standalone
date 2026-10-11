@@ -3,12 +3,12 @@
 #include <unistd.h>
 #include <stdbool.h>
 
-#include "sound/engine/instrument.h"
-#include "sound/engine/voice.h"
-#include "sound/engine/mixer.h"
-#include "sound/io/io_alsa.h"
-#include "sound/io/io_pmsd.h" 
-#include "sound/osc/osc_resampler.h"
+#include "pimusiic/sound/engine/instrument.h"
+#include "pimusiic/sound/engine/voice.h"
+#include "pimusiic/sound/engine/mixer.h"
+#include "pimusiic/sound/io/io_alsa.h"
+#include "pimusiic/sound/io/io_pmsd.h" 
+#include "pimusiic/sound/osc/osc_resampler.h"
 
 #define SAMPLE_FILE "data/overdriven_guitar.pmsd"
 
